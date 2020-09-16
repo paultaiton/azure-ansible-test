@@ -1,0 +1,34 @@
+---
+- name: Resource Group Creation Play
+  hosts: localhost
+  vars:
+    #az_subscription: 
+    #az_resource_group_name:
+    #az_resource_group_tags:
+    #  - name: keyname
+    #    value: keyvalue
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Gather subscription information
+      command:
+        cmd: "az account show --subscription {{ az_subscription }}"
+      register: azcli_account
+      changed_when: False # az account show is read-only, so is also idempotent.
+      when: az_subscription is defined
+
+    - name: Set subscription facts
+      set_fact:
+        az_subscription_id: "{{ azcli_account.stdout | from_json | json_query('id') }}"
+        az_subscription_name: "{{ azcli_account.stdout | from_json | json_query('name') }}"
+      when: az_subscription is defined and az_subscription_id is not defined
+
+    - name: List Resource Groups
+      azure.azcollection.azure_rm_resourcegroup_info:
+        auth_source: cli
+        name: "{{ az_resource_group_name | default(omit) }}"
+        subscription_id: "{{ az_subscription_id | default(omit) }}"
+        tags: "{{ az_resource_group_tags | default(omit) }}"
+      register: az_resourcegroup
+
