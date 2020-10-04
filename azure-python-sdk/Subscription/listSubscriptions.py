@@ -3,7 +3,7 @@
 #import azure
 from azure.common.client_factory import get_client_from_cli_profile
 
-import azure.mgmt.subscription as SubscriptionModule
+#import azure.mgmt.subscription as SubscriptionModule
 #from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 
