@@ -21,5 +21,10 @@ if __name__ == "__main__":
         print('id: {}'.format(sub.id))
         print('state: {}'.format(sub.state))
         print('subscription_id: {}'.format(sub.subscription_id))
+        if sub.tags:
+            print('tags: ')
+            for key in sub.tags:
+                print('  {}: {}'.format(key, sub.tags.get(key)) )
+        print('tenant_id: {}'.format(sub.tenant_id))
         print('')
     print('Hello world!')
