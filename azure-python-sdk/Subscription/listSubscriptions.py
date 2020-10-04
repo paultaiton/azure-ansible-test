@@ -4,8 +4,8 @@
 from azure.common.client_factory import get_client_from_cli_profile
 
 import azure.mgmt.subscription as SubscriptionModule
-from azure.mgmt.subscription import SubscriptionClient
-#from azure.mgmt.resource.subscriptions import SubscriptionClient
+#from azure.mgmt.subscription import SubscriptionClient
+from azure.mgmt.resource.subscriptions import SubscriptionClient
 
 #import azure.mgmt.resource as ResourceModule
 #from azure.mgmt.resource import ResourceManagementClient
