@@ -41,6 +41,6 @@
         subscription_id: "{{ az_subscription_id | default(omit) }}"
         tags: "{{ az_resource_group_tags | default(omit) }}"
       register: az_storage_accounts
-      loop: "{{ az_resource_groups }}"
+      loop: "{{ az_resource_groups.resourcegroups }}"
 
 
