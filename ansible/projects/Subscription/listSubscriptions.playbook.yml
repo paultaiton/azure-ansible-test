@@ -2,15 +2,22 @@
 - name: Subscription List
   hosts: localhost
   vars:
+    #   ONE of az_subscription_name or id, or neither for default sub.
+    #az_subscription_name: 
+    #az_subscription_id: 
   gather_facts: no # not necessary at this time; localhost provides no useful info.
   collections:
     - azure.azcollection
   tasks:
     - name: Gather subscription information
       azure.azcollection.azure_rm_subscription_info:
+        name: "{{ az_subscription_name | default(omit) }}"
+        id: "{{ az_subscription_id | default(omit) }}"
+        all: True
       register: az_subscriptions
 
     - name: Set subscription facts
       set_fact:
-        az_subscription_id: "{{ az_subscriptions[0].id }}"
-        az_subscription_name: "{{ az_subscriptions[0].name }}"
+        az_subscription_id: "{{ az_subscriptions.subscriptions[0].fqid }}"
+        az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
+        az_state: "{{ az_subscriptions.subscriptions | json_query('[*].state') }}"
