@@ -13,8 +13,8 @@ subscription_id=''
 if __name__ == "__main__":
     authorization_client = get_client_from_cli_profile(AuthorizationManagementClient) #, subscription_id=subscription_id )
 
-    role_get = authorization_client.role_assignments.get(scope=None, role_assignment_name='8b07e10d-ed4a-45a1-9f57-ca1bb23b29c5')
-    #role_list = authorization_client.role_assignments.list()
+    #role_get = authorization_client.role_assignments.get(scope=None, role_assignment_name='')
+    role_list = authorization_client.role_assignments.list()
     #role_list_for_resource_group = authorization_client.role_assignments.list_for_resource_group(resource_group_name='')
     #role_list_for_scope = authorization_client.role_assignments.list_for_scope(scope='')
     #role_get_by_id = authorization_client.role_assignments.get_by_id(role_id='')
