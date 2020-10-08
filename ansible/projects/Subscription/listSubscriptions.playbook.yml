@@ -14,6 +14,8 @@
         name: "{{ az_subscription_name | default(omit) }}"
         id: "{{ az_subscription_id | default(omit) }}"
         all: True
+        tags: "{{ az_tags | default(omit) }}"
+
       register: az_subscriptions
 
     - name: Set subscription facts

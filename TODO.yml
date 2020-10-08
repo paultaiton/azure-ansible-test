@@ -1,0 +1,11 @@
+azure_rm_virtualmachine:
+  - can add existing datadisks by id at provision time
+
+azure_rm_virtualmachine_info:
+  - lookup by fqid
+
+azure_rm_roleassignment:
+  - can use display names (or other?) attributes to make assignments
+
+azure_rm_roleassignment_info:
+  - can use strict scope matching

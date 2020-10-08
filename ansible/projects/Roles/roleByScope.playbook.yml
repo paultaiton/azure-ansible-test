@@ -1,0 +1,22 @@
+---
+- name: Resource Group Creation Play
+  hosts: localhost
+  vars:
+    #   Optional filters:
+    #az_role_scope: 
+    #az_role_assignee: 
+    #az_role_definition_id: 
+    #az_role_assignment_name: 
+    #az_subscription_id: 
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: List Role Assignments at scope
+      azure.azcollection.azure_rm_roleassignment_info:
+        name: "{{ az_role_assignment_name | default(omit) }}"
+        subscription_id: "{{ az_subscription_id | default(omit) }}"
+        scope: "{{ az_role_scope | default(omit) }}"
+        assignee: "{{ az_role_assignee | default(omit) }}"
+        role_definition_id: "{{ az_role_definition_id | default(omit) }}"
+      register: az_resourcegroups

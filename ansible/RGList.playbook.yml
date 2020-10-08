@@ -1,0 +1,21 @@
+---
+- name: Resource Group Creation Play
+  hosts: localhost
+  vars:
+    #   ONE of az_subscription_name or id, or neither for default sub.
+    #az_subscription_name: 
+    #az_subscription_id: 
+
+    #   Optional filters:
+    #az_resource_group_name:
+    #az_resource_group_tags:
+    #  - name: keyname
+    #    value: keyvalue
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Gather subscription information
+      debug:
+        var: ansible_limit
+
