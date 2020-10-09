@@ -3,6 +3,9 @@ azure_rm_virtualmachine:
 
 azure_rm_virtualmachine_info:
   - lookup by fqid
+  - data disk output doesn't contain disk ID or name
+  - osdisk??
+
 
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
