@@ -1,5 +1,5 @@
 ---
-- name: Resource Group Creation Play
+- name: Role Assignment Info Play
   hosts: localhost
   vars:
     #   Optional filters
@@ -21,4 +21,4 @@
         assignee: "{{ az_role_assignment_assignee | default(omit) }}"
         role_definition_id: "{{ az_role_definition_id | default(omit) }}"
         strict_scope_match: "{{ az_role_strict_scope_match | default(omit) }}"
-      register: az_resourcegroups
+      register: az_role_assignment

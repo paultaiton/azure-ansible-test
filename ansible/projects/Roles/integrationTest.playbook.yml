@@ -1,0 +1,83 @@
+---
+- name: Role Assignment Info Play
+  hosts: localhost
+  vars:
+    #   Optional filters
+    #az_role_assignment_name:
+    #az_subscription_id:
+    #az_role_assignment_scope:
+    #az_role_assignment_assignee:
+    #az_role_definition_id:
+    #az_role_strict_scope_match:
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+      # List All
+    - name: List All
+      azure.azcollection.azure_rm_roleassignment_info:
+      register: az_role_assignments
+
+    - name: Intentional mutual exclusion
+      azure.azcollection.azure_rm_roleassignment_info:
+        name: "{{ item.name | default(omit) }}"
+        assignee: "{{ item.assignee | default(omit) }}"
+        id: "{{ item.id | default(omit) }}"
+        scope: "{{ item.scope | default(omit) }}"
+      register: failures
+      ignore_errors: True
+      loop:
+        - name: "{{ az_role_assignments.roleassignments[0].name }}"
+          assignee: "{{ az_role_assignments.roleassignments[0].principal_id }}"
+        - assignee: "{{ az_role_assignments.roleassignments[0].principal_id }}"
+          id: "{{ az_role_assignments.roleassignments[0].id }}"
+        - name: "{{ az_role_assignments.roleassignments[0].name }}"
+          id: "{{ az_role_assignments.roleassignments[0].id }}"
+
+    - name: check intended failures
+      assert:
+        that:
+          - item.failed
+      loop: "{{ failures.results }}"
+
+################################################
+      # Get by Name
+    - name: List Role Assignments by Name
+      azure.azcollection.azure_rm_roleassignment_info:
+        name: "{{ az_role_assignments.roleassignments[0].name }}"
+        scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+      register: az_role_assignment_by_name
+
+      # Get by RG ( TODO add list_by_rg() method and module parameter.)
+#    - name: List Role Assignments at scope
+#      azure.azcollection.azure_rm_roleassignment_info:
+#        resource_group: "{{}}"
+#      register: az_role_assignment_by_rg
+
+    - name: List Role Assignments at scope
+      azure.azcollection.azure_rm_roleassignment_info:
+        scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+      register: az_role_assignment_by_scope
+
+    - name: List Role Assignments at scope with strict matching
+      azure.azcollection.azure_rm_roleassignment_info:
+        scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+        strict_scope_match: True
+      register: az_role_assignment_by_scope_strict
+
+    - name: check strict scope matching
+      assert:
+        that:
+          - item.scope == az_role_assignments.roleassignments[0].scope 
+      loop: "{{ az_role_assignment_by_scope_strict.roleassignments }}"
+
+      # Get by assignment ID ( TODO )
+    - name: List Role Assignments at id
+      azure.azcollection.azure_rm_roleassignment_info:
+        id: "{{ az_role_assignments.roleassignments[0].id }}"
+      register: az_role_assignment_by_id
+
+    - name: List Role Assignments by assignee
+      azure.azcollection.azure_rm_roleassignment_info:
+        assignee: "{{ az_role_assignments.roleassignments[0].principal_id }}"
+      register: az_role_assignment_by_assignee
