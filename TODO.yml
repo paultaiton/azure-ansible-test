@@ -6,6 +6,9 @@ azure_rm_virtualmachine_info:
   - data disk output doesn't contain disk ID or name
   - osdisk??
 
+azure_rm_manageddisk_info:
+  - fix the tag problem
+  - add filter for managed by
 
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
