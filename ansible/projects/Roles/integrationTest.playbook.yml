@@ -21,7 +21,7 @@
         assignee: "{{ item.assignee | default(omit) }}"
         id: "{{ item.id | default(omit) }}"
         scope: "{{ item.scope | default(omit) }}"
-      register: failures
+      register: failures_info
       ignore_errors: True
       loop:
         - name: "{{ az_role_assignments.roleassignments[0].name }}"
@@ -31,12 +31,6 @@
         - name: "{{ az_role_assignments.roleassignments[0].name }}"
           id: "{{ az_role_assignments.roleassignments[0].id }}"
 
-    - name: check intended failures info
-      assert:
-        that:
-          - item.failed
-      loop: "{{ failures.results }}"
-
     - name: Intentional failures mutable
       azure.azcollection.azure_rm_roleassignment:
         name: "{{ item.name | default(omit) }}"
@@ -45,7 +39,7 @@
         scope: "{{ item.scope | default(omit) }}"
         role_definition_id: "{{ item.role_definition_id | default(omit) }}"
         state: "{{ item.state | default(omit) }}"
-      register: failures
+      register: failures_mutable
       ignore_errors: True
       loop:
           # mutually exclusive
@@ -71,11 +65,12 @@
           role_definition_id: "{{ az_role_assignments.roleassignments[0].role_definition_id }}"
           state: "absent"
 
-    - name: check intended failures mutable
+    - name: check intended failures info
       assert:
         that:
           - item.failed
-      loop: "{{ failures.results }}"
+      loop: "{{ failures_info.results | union(failures_mutable.results) }}"
+
 
     - name: get resource group info
       azure.azcollection.azure_rm_resourcegroup_info:
@@ -114,8 +109,6 @@
 
     - name: List Role Assignments at scope with strict matching
       azure.azcollection.azure_rm_roleassignment_info:
-        #scope: "{{ az_role_assignments.roleassignments[0].scope }}"
-        #scope: "{{ az_resource_group.resourcegroups[0].id }}"
         scope: "{{ az_role_assignments.roleassignments[0].scope }}"
         strict_scope_match: True
       register: az_role_assignment_by_scope_strict
