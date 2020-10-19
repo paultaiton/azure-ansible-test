@@ -2,13 +2,10 @@
 - name: Role Assignment Info Play
   hosts: localhost
   vars:
-    #   Optional filters
-    #az_role_assignment_name:
-    #az_subscription_id:
-    #az_role_assignment_scope:
-    #az_role_assignment_assignee:
-    #az_role_definition_id:
-    #az_role_strict_scope_match:
+    ##--  Required Parameters
+    #az_resource_group_name
+    #az_assignee_object_id
+    uuid: bb21a88b-30e1-42b5-84e8-1d3f322de033
   gather_facts: no # not necessary at this time; localhost provides no useful info.
   collections:
     - azure.azcollection
@@ -18,7 +15,7 @@
       azure.azcollection.azure_rm_roleassignment_info:
       register: az_role_assignments
 
-    - name: Intentional mutual exclusion
+    - name: Intentional mutual exclusion info
       azure.azcollection.azure_rm_roleassignment_info:
         name: "{{ item.name | default(omit) }}"
         assignee: "{{ item.assignee | default(omit) }}"
@@ -34,33 +31,91 @@
         - name: "{{ az_role_assignments.roleassignments[0].name }}"
           id: "{{ az_role_assignments.roleassignments[0].id }}"
 
-    - name: check intended failures
+    - name: check intended failures info
       assert:
         that:
           - item.failed
       loop: "{{ failures.results }}"
 
-################################################
-      # Get by Name
+    - name: Intentional failures mutable
+      azure.azcollection.azure_rm_roleassignment:
+        name: "{{ item.name | default(omit) }}"
+        assignee_object_id: "{{ item.assignee | default(omit) }}"
+        id: "{{ item.id | default(omit) }}"
+        scope: "{{ item.scope | default(omit) }}"
+        role_definition_id: "{{ item.role_definition_id | default(omit) }}"
+        state: "{{ item.state | default(omit) }}"
+      register: failures
+      ignore_errors: True
+      loop:
+          # mutually exclusive
+        - scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+          id: "{{ az_role_assignments.roleassignments[0].id }}"
+          # mutually exclusive
+        - name: "{{ az_role_assignments.roleassignments[0].name }}"
+          id: "{{ az_role_assignments.roleassignments[0].id }}"
+          # missing required role_definition_id
+        - scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+          assignee_object_id: "{{ az_role_assignments.roleassignments[0].principal_id }}"
+          state: "present"
+          # missing required assignee_object_id
+        - scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+          role_definition_id: "{{ az_role_assignments.roleassignments[0].role_definition_id }}"
+          state: "present"
+          # missing required role_definition_id
+        - scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+          assignee_object_id: "{{ az_role_assignments.roleassignments[0].principal_id }}"
+          state: "absent"
+          # missing required assignee_object_id
+        - scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+          role_definition_id: "{{ az_role_assignments.roleassignments[0].role_definition_id }}"
+          state: "absent"
+
+    - name: check intended failures mutable
+      assert:
+        that:
+          - item.failed
+      loop: "{{ failures.results }}"
+
+    - name: get resource group info
+      azure.azcollection.azure_rm_resourcegroup_info:
+        name: "{{ az_resource_group_name }}"
+      register: az_resource_group
+
+    - name: create role assignment by id
+      azure.azcollection.azure_rm_roleassignment:
+        id: "{{ az_resource_group.resourcegroups[0].id }}/providers/Microsoft.Authorization/roleAssignments/{{ uuid }}"
+        assignee_object_id: "{{ az_assignee_object_id }}"
+        role_definition_id: "/subscriptions/{{ az_resource_group.resourcegroups[0].id.split('/')[2] }}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+      register: az_role_assignment_create
+
+    - name: create role assignment by scope
+      azure.azcollection.azure_rm_roleassignment:
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
+        assignee_object_id: "{{ az_assignee_object_id }}"
+        role_definition_id: "/subscriptions/{{ az_resource_group.resourcegroups[0].id.split('/')[2] }}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+      register: az_role_assignment_idempotent
+
+    - name: check idempotence
+      assert:
+        that:
+          - az_role_assignment_idempotent.changed == False
+
     - name: List Role Assignments by Name
       azure.azcollection.azure_rm_roleassignment_info:
-        name: "{{ az_role_assignments.roleassignments[0].name }}"
-        scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+        name: "{{ az_role_assignment_create.name }}"
+        scope: "{{ az_role_assignment_create.scope }}"
       register: az_role_assignment_by_name
-
-      # Get by RG ( TODO add list_by_rg() method and module parameter.)
-#    - name: List Role Assignments at scope
-#      azure.azcollection.azure_rm_roleassignment_info:
-#        resource_group: "{{}}"
-#      register: az_role_assignment_by_rg
 
     - name: List Role Assignments at scope
       azure.azcollection.azure_rm_roleassignment_info:
-        scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
       register: az_role_assignment_by_scope
 
     - name: List Role Assignments at scope with strict matching
       azure.azcollection.azure_rm_roleassignment_info:
+        #scope: "{{ az_role_assignments.roleassignments[0].scope }}"
+        #scope: "{{ az_resource_group.resourcegroups[0].id }}"
         scope: "{{ az_role_assignments.roleassignments[0].scope }}"
         strict_scope_match: True
       register: az_role_assignment_by_scope_strict
@@ -71,13 +126,48 @@
           - item.scope == az_role_assignments.roleassignments[0].scope 
       loop: "{{ az_role_assignment_by_scope_strict.roleassignments }}"
 
-      # Get by assignment ID ( TODO )
     - name: List Role Assignments at id
       azure.azcollection.azure_rm_roleassignment_info:
-        id: "{{ az_role_assignments.roleassignments[0].id }}"
+        id: "{{ az_role_assignment_create.id }}"
       register: az_role_assignment_by_id
 
     - name: List Role Assignments by assignee
       azure.azcollection.azure_rm_roleassignment_info:
         assignee: "{{ az_role_assignments.roleassignments[0].principal_id }}"
       register: az_role_assignment_by_assignee
+
+    - name: Delete Role Assignment by id
+      azure.azcollection.azure_rm_roleassignment:
+        id: "{{ az_role_assignment_create.id }}"
+        state: absent
+      register: az_role_assignment_delete
+
+    - name: create role assignment with name
+      azure.azcollection.azure_rm_roleassignment:
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
+        assignee_object_id: "{{ az_assignee_object_id }}"
+        role_definition_id: "/subscriptions/{{ az_resource_group.resourcegroups[0].id.split('/')[2] }}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+        name: "{{ uuid }}" 
+      register: az_role_assignment_create
+
+    - name: Delete Role by Name
+      azure.azcollection.azure_rm_roleassignment:
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
+        name: "{{ uuid }}"
+        state: absent
+      register: az_role_assignment_delete
+
+    - name: create role assignment by scope
+      azure.azcollection.azure_rm_roleassignment:
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
+        assignee_object_id: "{{ az_assignee_object_id }}"
+        role_definition_id: "/subscriptions/{{ az_resource_group.resourcegroups[0].id.split('/')[2] }}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+      register: az_role_assignment_create
+
+    - name: delete by scope, assignee_object_id and role_definition_id
+      azure.azcollection.azure_rm_roleassignment:
+        scope: "{{ az_resource_group.resourcegroups[0].id }}"
+        assignee_object_id: "{{ az_assignee_object_id }}"
+        role_definition_id: "/subscriptions/{{ az_resource_group.resourcegroups[0].id.split('/')[2] }}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+        state: absent
+      register: az_role_assignment_delete
