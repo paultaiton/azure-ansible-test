@@ -1,0 +1,50 @@
+---
+- name: List Managed Disks play
+  hosts: localhost
+  vars:
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+
+    - name: List all Managed Disks
+      azure.azcollection.azure_rm_manageddisk_info:
+      register: az_manageddisks
+
+    - name: debug
+      debug:
+        var: az_manageddisks
+
+    - name: Fail for parameters
+      azure.azcollection.azure_rm_manageddisk_info:
+        name: "{{ az_manageddisks.ansible_info.azure_managed_disk[0].name }}"
+      register: az_manageddisks
+      ignore_errors: True
+
+    - name: check for intended failure
+      assert:
+        that:
+          - az_manageddisks.failed
+
+    - name: List Managed Disks by RG
+      azure.azcollection.azure_rm_manageddisk_info:
+        resource_group: "{{ az_manageddisks.ansible_info.azure_managed_disk[0].id.split('/')[5] | lower }}"
+      register: az_manageddisks
+
+    - name: List Managed Disks by name
+      azure.azcollection.azure_rm_manageddisk_info:
+        name: "{{ az_manageddisks.ansible_info.azure_managed_disk[0].name }}"
+        resource_group: "{{ az_manageddisks.ansible_info.azure_managed_disk[0].id.split('/')[5] | lower }}"
+      register: az_manageddisks
+      ignore_errors: True
+
+#   - name: List Managed Disks by managed_by
+#     azure.azcollection.azure_rm_manageddisk_info:
+#       managed_by: "{{ az_manageddisks.ansible_info.azure_managed_disk[0].managed_by }}"
+#     register: az_manageddisks
+
+    - name: List Managed Disks by tags
+      azure.azcollection.azure_rm_manageddisk_info:
+        tags:
+          - "appid:abcd"
+      register: az_manageddisks

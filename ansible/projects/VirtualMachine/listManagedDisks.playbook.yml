@@ -1,0 +1,16 @@
+---
+- name: List Managed Disks play
+  hosts: localhost
+  vars:
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: List Managed Disks
+      azure.azcollection.azure_rm_manageddisk_info:
+        name: "{{ name | default(omit)}}"
+        resource_group: "{{ resource_group | default(omit)}}"
+        tags: "{{ tags | default(omit)}}"
+        managed_by: "{{ managed_by | default(omit)}}"
+      register: az_manageddisks
+
