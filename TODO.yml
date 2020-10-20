@@ -7,11 +7,9 @@ azure_rm_virtualmachine_info:
   - osdisk??
 
 azure_rm_manageddisk_info:
-  - fix the tag problem
-  - add filter for managed by
+  - fix the tag problem, teamate says it needs a null value to not bomb out.
+  - add filter for managed by to isolate disks by machine.
 
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
 
-azure_rm_roleassignment_info:
-  - can use strict scope matching
