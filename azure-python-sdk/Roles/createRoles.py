@@ -39,4 +39,4 @@ if __name__ == "__main__":
     #     print('')
 
     results = authorization_client.role_assignments.create(scope=scope, role_assignment_name=role_assignment_name, parameters=parameters)
-    #results = authorization_client.role_assignments.create_by_id(role_id=role_definition_id, parameters=parameters)
+    # results = authorization_client.role_assignments.create_by_id(role_id=role_definition_id, parameters=parameters)
