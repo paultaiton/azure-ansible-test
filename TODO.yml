@@ -1,3 +1,6 @@
+azure-storage:
+  - package deprecated in pip.
+
 azure_rm_virtualmachine:
   - can add existing datadisks by id at provision time
 
