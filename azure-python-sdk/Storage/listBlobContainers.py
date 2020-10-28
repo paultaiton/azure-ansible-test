@@ -17,5 +17,5 @@ if __name__ == "__main__":
             for storage_account in storage_client.storage_accounts.list():
                 resource_group_name = storage_account.id.split('/')[4]
                 for blob_container in storage_client.blob_containers.list(resource_group_name=resource_group_name, account_name=storage_account.name):
-                    if blob_container.public_access:
+                    if blob_container.public_access != 'None':
                         print(blob_container.id)
