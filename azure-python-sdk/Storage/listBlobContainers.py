@@ -16,7 +16,10 @@ if __name__ == "__main__":
             print('###########' + subscription.display_name + '###############')
             storage_client = get_client_from_cli_profile(StorageManagementClient,
                                                          subscription_id=subscription.subscription_id)
-            for storage_account in storage_client.storage_accounts.list():
+
+            storage_accounts = storage_client.storage_accounts.list()
+            storage_accounts = [account for account in storage_accounts if account.allow_blob_public_access]
+            for storage_account in storage_accounts:
                 resource_group_name = parse_resource_id(storage_account.id).get('resource_group')
                 for blob_container in storage_client.blob_containers.list(resource_group_name=resource_group_name,
                                                                           account_name=storage_account.name):
