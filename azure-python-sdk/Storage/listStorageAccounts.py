@@ -16,9 +16,12 @@ if __name__ == "__main__":
             print('###########' + subscription.display_name + '###############')
             storage_client = get_client_from_cli_profile(StorageManagementClient,
                                                          subscription_id=subscription.subscription_id)
-            for storage_account in storage_client.storage_accounts.list():
-                resource_group_name = parse_resource_id(storage_account.id).get('resource_group')
-                for blob_container in storage_client.blob_containers.list(resource_group_name=resource_group_name,
-                                                                          account_name=storage_account.name):
-                    if blob_container.public_access != 'None':
-                        print(blob_container.id)
+            storage_accounts = storage_client.storage_accounts.list()
+            storage_accounts = [account for account in storage_accounts if account.minimum_tls_version != 'TLS1_2' or
+                                                                           account.allow_blob_public_access or
+                                                                           not account.enable_https_traffic_only]
+            for account in storage_accounts:
+                print(account.id)
+                print('minimum_tls_version: ' + account.minimum_tls_version)
+                print('allow_blob_public_access: ' + str(account.allow_blob_public_access))
+                print('enable_https_traffic_only: ' + str(account.enable_https_traffic_only))
