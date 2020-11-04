@@ -1,0 +1,6 @@
+---
+plugin: azure_rm
+auth_source: auto
+
+include_vm_resource_groups:
+  - resource-group-name
