@@ -1,3 +1,6 @@
+ansible.builtin:
+  - the unarchive package does not include a timeout parameter. https://github.com/ansible/ansible/blob/devel/lib/ansible/modules/unarchive.py
+
 azure-storage:
   - package deprecated in pip.
 
