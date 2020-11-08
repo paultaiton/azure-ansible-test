@@ -1,6 +1,3 @@
-ansible.builtin:
-  - the unarchive package does not include a timeout parameter. https://github.com/ansible/ansible/blob/devel/lib/ansible/modules/unarchive.py
-
 azure-storage:
   - package deprecated in pip.
 
@@ -12,10 +9,6 @@ azure_rm_virtualmachine_info:
   - data disk output doesn't contain disk ID or name
   - osdisk??
 
-azure_rm_manageddisk_info:
-  - fix the tag problem, teamate says it needs a null value to not bomb out.
-  - add filter for managed by to isolate disks by machine.
-
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
-
+  OR make module to invoke graph api.
