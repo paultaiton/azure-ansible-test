@@ -12,3 +12,5 @@ azure_rm_virtualmachine_info:
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
   OR make module to invoke graph api.
+
+test.
