@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import uuid
 from time import sleep
 from azure.common.client_factory import get_client_from_cli_profile
 
