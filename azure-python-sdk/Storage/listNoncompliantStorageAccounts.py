@@ -27,7 +27,6 @@ if __name__ == "__main__":
                                                                            not account.enable_https_traffic_only]
             except CloudError as error:
                 print('Azure Cloud Error: {}'.format(error))
-                sleep(5)
 
             for account in storage_accounts:
                 print(account.id)
