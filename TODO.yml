@@ -12,3 +12,6 @@ azure_rm_virtualmachine_info:
 azure_rm_roleassignment:
   - can use display names (or other?) attributes to make assignments
   OR make module to invoke graph api.
+
+azure_rm_securitygroup:
+  - C:\Users\paul\Documents\vscode-workspace\ansible-azure-network\Azure\addCommonServiceRule.py
