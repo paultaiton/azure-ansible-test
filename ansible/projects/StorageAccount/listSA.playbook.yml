@@ -37,6 +37,7 @@
 
     - name: List Storage Accounts
       azure.azcollection.azure_rm_storageaccount_info:
+        show_connection_string: "{{ show_connection_string | default(omit) }}"
         name: "{{ az_storage_name | default(omit) }}"
         resource_group: "{{ az_resource_group | default(omit) }}"
         subscription_id: "{{ az_subscription_id | default(omit) }}"
