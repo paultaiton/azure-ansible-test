@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import uuid
 from time import sleep
 from azure.common.client_factory import get_client_from_cli_profile
 
@@ -27,7 +26,6 @@ if __name__ == "__main__":
                                                                            not account.enable_https_traffic_only]
             except CloudError as error:
                 print('Azure Cloud Error: {}'.format(error))
-                sleep(5)
 
             for account in storage_accounts:
                 print(account.id)
