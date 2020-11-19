@@ -28,19 +28,17 @@
         az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
       when: not az_subscriptions.skipped | default(false)
 
-    - name: List Resource Groups
-      azure.azcollection.azure_rm_resourcegroup_info:
-        name: "{{ az_resource_group_name | default(omit) }}"
-        subscription_id: "{{ az_subscription_id | default(omit) }}"
-        tags: "{{ az_resource_group_tags | default(omit) }}"
-      register: az_resource_groups
+#   - name: List Resource Groups
+#     azure.azcollection.azure_rm_resourcegroup_info:
+#       name: "{{ az_resource_group_name | default(omit) }}"
+#       subscription_id: "{{ az_subscription_id | default(omit) }}"
+#       tags: "{{ az_resource_group_tags | default(omit) }}"
+#     register: az_resource_groups
 
     - name: List Storage Accounts
       azure.azcollection.azure_rm_storageaccount_info:
-        resource_group: "{{ item.name }}"
+        name: "{{ az_storage_name | default(omit) }}"
+        resource_group: "{{ az_resource_group | default(omit) }}"
         subscription_id: "{{ az_subscription_id | default(omit) }}"
         tags: "{{ az_resource_group_tags | default(omit) }}"
       register: az_storage_accounts
-      loop: "{{ az_resource_groups.resourcegroups }}"
-
-

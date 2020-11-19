@@ -36,26 +36,27 @@ if __name__ == "__main__":
 
     storage_accounts = []
     try:
-        storage_accounts = [storage_client.storage_accounts.get_properties(resource_group_name=resource_group_name, account_name=storage_name)]
+        storage_accounts = storage_client.storage_accounts.list()
+        # storage_accounts = [storage_client.storage_accounts.get_properties(resource_group_name=resource_group_name, account_name=storage_name)]
+        # storage_accounts = [storage_client.storage_accounts.create(resource_group_name=resource_group_name, account_name=storage_name, parameters)]
+        # storage_accounts = storage_client.storage_accounts.delete()
+        # storage_accounts = storage_client.storage_accounts.failover()
+        # storage_accounts = storage_client.storage_accounts.list_account_sas()
+        # storage_accounts = storage_client.storage_accounts.list_by_resource_group()
+        # storage_accounts = storage_client.storage_accounts.list_keys()
+        # storage_accounts = storage_client.storage_accounts.list_service_sas()
+        # storage_accounts = storage_client.storage_accounts.regenerate_key()
+        # storage_accounts = storage_client.storage_accounts.restore_blob_ranges()
+        # storage_accounts = storage_client.storage_accounts.revoke_user_delegation_keys()
+        # storage_accounts = storage_client.storage_accounts.update()
     except CloudError:
         pass
     if not storage_accounts:
         name_check_response = storage_client.storage_accounts.check_name_availability(name=storage_name)
-    # storage_accounts = [storage_client.storage_accounts.create(resource_group_name=resource_group_name, account_name=storage_name, parameters)]
-    storage_accounts = storage_client.storage_accounts.list()
-    # storage_accounts = storage_client.storage_accounts.delete()
-    # storage_accounts = storage_client.storage_accounts.failover()
-    # storage_accounts = storage_client.storage_accounts.list_account_sas()
-    # storage_accounts = storage_client.storage_accounts.list_by_resource_group()
-    # storage_accounts = storage_client.storage_accounts.list_keys()
-    # storage_accounts = storage_client.storage_accounts.list_service_sas()
-    # storage_accounts = storage_client.storage_accounts.regenerate_key()
-    # storage_accounts = storage_client.storage_accounts.restore_blob_ranges()
-    # storage_accounts = storage_client.storage_accounts.revoke_user_delegation_keys()
-    # storage_accounts = storage_client.storage_accounts.update()
 
     for account in storage_accounts:
         account_dict = account.as_dict()
+        print(account_dict.sku.name)
         print(account.id)
         print('minimum_tls_version: ' + str(account.minimum_tls_version))
         print('allow_blob_public_access: ' + str(account.allow_blob_public_access))
