@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     for account in storage_accounts:
         account_dict = account.as_dict()
-        print(account_dict.sku.name)
+        print(account_dict.get('sku', {}).get('name'))
         print(account.id)
         print('minimum_tls_version: ' + str(account.minimum_tls_version))
         print('allow_blob_public_access: ' + str(account.allow_blob_public_access))
