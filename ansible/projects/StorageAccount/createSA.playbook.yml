@@ -1,0 +1,39 @@
+---
+- name: Storage Account List Play
+  hosts: localhost
+  vars:
+    #   ONE of az_subscription_name or id, or neither for default sub.
+    #az_subscription_name: 
+    #az_subscription_id: 
+
+    #   Optional filters:
+    #az_resource_group_name:
+    #az_resource_group_tags:
+    #  - name: keyname
+    #    value: keyvalue
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Gather subscription information
+      azure.azcollection.azure_rm_subscription_info:
+        name: "{{ az_subscription_name | default(omit) }}"
+        id: "{{ az_subscription_id | default(omit) }}"
+      register: az_subscriptions
+      when: az_subscription_name is defined or az_subscription_id is defined
+
+    - name: Set subscription facts
+      set_fact:
+        az_subscription_id: "{{ az_subscriptions.subscriptions[0].subscription_id }}"
+        az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
+      when: not az_subscriptions.skipped | default(false)
+
+    - name: List Storage Accounts
+      azure.azcollection.azure_rm_storageaccount:
+        show_connection_string: "{{ show_connection_string | default(omit) }}"
+        name: "{{ az_storage_name | default(omit) }}"
+        resource_group: "{{ az_resource_group | default(omit) }}"
+        subscription_id: "{{ az_subscription_id | default(omit) }}"
+        tags: "{{ az_resource_group_tags | default(omit) }}"
+      register: az_storage_accounts
+
