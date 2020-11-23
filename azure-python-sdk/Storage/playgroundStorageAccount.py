@@ -28,13 +28,14 @@ if __name__ == "__main__":
     storage_client = get_client_from_cli_profile(StorageManagementClient)
     storage_models = StorageManagementClient.models("2019-06-01")
 
-    storage_name = 'paulsstorageaccount'
-    resource_group_name = 'resource-group-01'
+    storage_name = 'paito01test02'
+    resource_group_name = 'ansible-test-storage-accounts'
 
     storage_accounts = []
     name_check_response = None
     if not storage_accounts:
         name_check_response = storage_client.storage_accounts.check_name_availability(name=storage_name)
+    storage_model_create_parameters = storage_models.StorageAccountCreateParameters()
     if name_check_response and name_check_response.name_available:
         storage_parameters = StorageAccountCreateParameters(**storage_parameters_dict)
         poller = storage_client.storage_accounts.create(resource_group_name=resource_group_name, account_name=storage_name, parameters=storage_parameters_dict)
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     # try:
     # storage_accounts = storage_client.storage_accounts.list()
     storage_accounts = [storage_client.storage_accounts.get_properties(resource_group_name=resource_group_name, account_name=storage_name)]
-    # storage_accounts = storage_client.storage_accounts.delete()
+    storage_accounts = storage_client.storage_accounts.delete()
     # storage_accounts = storage_client.storage_accounts.failover()
     # storage_accounts = storage_client.storage_accounts.list_account_sas()
     # storage_accounts = storage_client.storage_accounts.list_by_resource_group()

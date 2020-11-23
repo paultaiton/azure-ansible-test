@@ -7,7 +7,7 @@
     #az_subscription_id: 
 
     #   Optional filters:
-    #az_resource_group_name:
+    az_resource_group_name: ansible-test-storage-accounts
     #az_resource_group_tags:
     #  - name: keyname
     #    value: keyvalue
@@ -28,19 +28,52 @@
         az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
       when: not az_subscriptions.skipped | default(false)
 
-    - name: List Resource Groups
-      azure.azcollection.azure_rm_resourcegroup_info:
-        name: "{{ az_resource_group_name | default(omit) }}"
+    - name: Default Storage Account
+      azure.azcollection.azure_rm_storageaccount:
+        name: "paultaitondefaults"
+        account_type: "Standard_LRS"
+        resource_group: "{{ az_resource_group_name }}"
         subscription_id: "{{ az_subscription_id | default(omit) }}"
-        tags: "{{ az_resource_group_tags | default(omit) }}"
-      register: az_resource_groups
+      register: az_storage_account
 
-    - name: List Storage Accounts
-      azure.azcollection.azure_rm_storageaccount_info:
-        resource_group: "{{ item.name }}"
+    - set_fact:
+        storage_name_list: "{{ (storage_name_list | default([]) ) | union([az_storage_account.state.name]) }}"
+
+    - name: Storage Account Types
+      azure.azcollection.azure_rm_storageaccount:
+        name: "ptxa{{ item.name  | lower }}"
+        account_type: "{{ item.type | default(omit) }}"
+        resource_group: "{{ az_resource_group_name }}"
         subscription_id: "{{ az_subscription_id | default(omit) }}"
-        tags: "{{ az_resource_group_tags | default(omit) }}"
-      register: az_storage_accounts
-      loop: "{{ az_resource_groups.resourcegroups }}"
+        kind: "{{ item.kind | default('StorageV2') }}"
+        access_tier: "{{ item.access_tier | default(omit) }}"
+      register: az_storage_account
+      loop:
+        - name: Storage
+          kind: Storage
+        - kind: StorageV2
+          name: StorageV2
+        - kind: BlobStorage
+          name: BlobStorage
+          access_tier: Hot
+        - kind: FileStorage
+          name: FileStorage
+          # type: Premium_LRS
+        - kind: BlockBlobStorage
+          name: BlockBlobStorage
+          # type: Premium_LRS
 
+    - debug:
+        var: az_storage_account
 
+    - set_fact:
+        storage_name_list: "{{ (storage_name_list | default([]) ) | union(az_storage_account.results | json_query('[*].state.name') ) }}"
+
+    - name: Delete Storage Accounts
+      azure.azcollection.azure_rm_storageaccount:
+        name: "{{ item }}"
+        resource_group: "{{ az_resource_group_name }}"
+        state: absent
+      loop: "{{ storage_name_list }}"
+
+      # kind: "Storage" dict(type='str', default='StorageV2', choices=['Storage', 'StorageV2', 'BlobStorage', 'FileStorage', 'BlockBlobStorage']),
