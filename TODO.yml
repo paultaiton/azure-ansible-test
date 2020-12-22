@@ -1,3 +1,6 @@
+azure_rm_managed_disk:
+  - why is it not idempotent?
+
 azure-storage:
   - package deprecated in pip.
 
