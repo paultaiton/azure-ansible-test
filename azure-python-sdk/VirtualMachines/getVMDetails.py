@@ -8,7 +8,7 @@ from azure.mgmt.network import NetworkManagementClient
 from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
-subscription_names = ["subscription-name"]
+subscription_names = []
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
                                 public_ip_address.append(config.public_ip_address.ip_address)
 
                     location = vmdict.get('location')
-                    status = '-'
+                    status = '-'  # not available without extended atributes which is painfully slow to fetch per VM.
                     tags = vmdict.get('tags')
 
                     # try:
@@ -60,7 +60,7 @@ if __name__ == "__main__":
                     #   operating_system = ''
 
                     size = vmdict.get('hardware_profile', {}).get('vm_size')
-                    public_dns_name = '-'
+                    public_dns_name = '-'  # we don't use this, I'm not bothering.
                     host = vm.host
 
                     csvwriter.writerow([name, serial, subscription.display_name.lower(), resource_group, ','.join(private_ip_address), location, status,
