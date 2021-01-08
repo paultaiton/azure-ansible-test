@@ -7,12 +7,12 @@ from azure.mgmt.resource.resources import ResourceManagementClient
 from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
-subscription_names = ["az-acflabs-nonprod-01"]
-tag_names = ["environment"]
+subscription_names = ["subname"]
+tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier"]
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
-    with open(file='/tmp/azure-vm-tags.csv', mode='w') as csvfile:
+    with open(file='/tmp/azure-rg-tags.csv', mode='w') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Headers.
         csvwriter.writerow(["NAME", "SUBSCRIPTION"] + tag_names)
