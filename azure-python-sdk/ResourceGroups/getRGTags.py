@@ -8,7 +8,7 @@ from azure.mgmt.resource.resources import ResourceManagementClient
 from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
-#### VARIABLE CONFIGURATIONS ####
+# ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/azure-rg-tags.csv'  # should be *.csv
 subscription_names = ["az-sub-name-01", "az-sub-name-02"]  # list of strings of the full display name of desired subscriptions
 tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier"]  # tag key names to include in dump
