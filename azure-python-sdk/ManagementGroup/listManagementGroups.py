@@ -4,13 +4,17 @@ from azure.mgmt.resource import SubscriptionClient
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 from msrestazure.azure_active_directory import UserPassCredentials
 
+group_id = ''
+
 
 def main():
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
     management_groups_api = ManagementGroupsAPI(subscription_client.config.credentials)
     print('')
 
-    for group in management_groups_api.management_groups.list():
+    # management_group_list = management_groups_api.management_groups.list()
+    management_group_list = [management_groups_api.management_groups.get(group_id=group_id)]
+    for group in management_group_list:
         print('display_name: {}'.format(group.display_name))
         print('id: {}'.format(group.id))
         print('name: {}'.format(group.name))
