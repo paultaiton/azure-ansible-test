@@ -1,0 +1,31 @@
+---
+- name: Management Group List
+  hosts: localhost
+  vars:
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Get list of all managementgroups
+      azure.azcollection.azure_rm_managementgroup_info:
+      register: az_all_managementgroups
+
+    - name: Get a managementgroup by id
+      azure.azcollection.azure_rm_managementgroup_info:
+        id: "{{ az_all_managementgroups.management_groups[0].id }}"
+
+    - name: Get a managementgroup by name
+      azure.azcollection.azure_rm_managementgroup_info:
+        name: "{{ az_all_managementgroups.management_groups[0].name }}"
+
+    - name: Test invalid name id combo
+      azure.azcollection.azure_rm_managementgroup_info:
+        name: "{{ az_all_managementgroups.management_groups[0].name }}"
+        id: "{{ az_all_managementgroups.management_groups[0].id }}"
+      register: invalid_name
+      ignore_errors: yes  
+
+    - name: Assert task failed
+      assert: 
+        that: 
+          - "invalid_name['failed'] == True"
