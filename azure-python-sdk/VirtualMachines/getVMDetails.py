@@ -8,14 +8,14 @@ from azure.mgmt.network import NetworkManagementClient
 from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
-subscription_names = []
+subscription_names = [ ]
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
     with open(file='/tmp/azure-vm.csv', mode='w') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Headers.
-        csvwriter.writerow(["NAME", "SERIAL", "SUBSCRIPTION", "RESOURCE GROUP", "PRIVATE IP ADDRESS", "LOCATION", "STATUS",
+        csvwriter.writerow(["NAME", "COMPUTER_NAME", "SERIAL", "SUBSCRIPTION", "RESOURCE GROUP", "PRIVATE IP ADDRESS", "LOCATION", "STATUS",
                             "TAGS", "OPERATING SYSTEM", "SIZE", "PUBLIC IP ADDRESS", "PUBLIC DNS NAME", "HOST"])
 
         for subscription in subscription_client.subscriptions.list():
@@ -34,6 +34,7 @@ if __name__ == "__main__":
                     # "NAME", "SERIAL", "SUBSCRIPTION", "RESOURCE GROUP", "PRIVATE IP ADDRESS", "LOCATION", "STATUS",
                     # "TAGS", "OPERATING SYSTEM", "SIZE", "PUBLIC IP ADDRESS", "PUBLIC DNS NAME", "HOST"
                     name = vmdict.get('name')
+                    computer_name = vmdict.get('os_profile', {}).get('computer_name')
                     serial = vmdict.get('vm_id')
                     # subscription already set above.
                     resource_group = vm_parse_fields.get('resource_group').lower()
@@ -63,5 +64,5 @@ if __name__ == "__main__":
                     public_dns_name = '-'  # we don't use this, I'm not bothering.
                     host = vm.host
 
-                    csvwriter.writerow([name, serial, subscription.display_name.lower(), resource_group, ','.join(private_ip_address), location, status,
+                    csvwriter.writerow([name, computer_name, serial, subscription.display_name.lower(), resource_group, ','.join(private_ip_address), location, status,
                                         tags, operating_system, size, ','.join(public_ip_address), public_dns_name, host])
