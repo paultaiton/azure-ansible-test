@@ -1,0 +1,22 @@
+---
+- name: Management Group List
+  hosts: localhost
+  vars:
+    #   ONE of az_subscription_name or id, or neither for default sub.
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Gather Management Group information
+      azure.azcollection.azure_rm_managementgroup_info:
+        name: "{{ az_mg_name | default(omit) }}"
+        id: "{{ az_mg_id | default(omit) }}"
+        flatten: "{{ az_mg_flatten | default(omit) }}"
+        children: "{{ az_mg_children | default(omit) }}"
+        recurse: "{{ az_mg_recurse | default(omit) }}"
+      register: az_management_groups
+
+    # - name: Set subscription facts
+      # set_fact:
+        # az_management_group_id: "{{ az_subscriptions.subscriptions[0].fqid }}"
+        # az_management_group_name: "{{ az_subscriptions.subscriptions[0].display_name }}"

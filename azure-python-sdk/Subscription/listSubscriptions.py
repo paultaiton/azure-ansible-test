@@ -4,10 +4,10 @@ from azure.mgmt.resource.subscriptions import SubscriptionClient
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
-    # subscription_list = [subscription_client.subscriptions.get('')]
-    subscription_list = subscription_client.subscriptions.list()
+    subscription_list = [subscription_client.subscriptions.get(subscription_id='')]
+    # subscription_list = subscription_client.subscriptions.list()
     # subscription_list = subscription_client.subscriptions.list_locations()
-    subscription_listraw = list(subscription_client.subscriptions.list())
+    # subscription_listraw = list(subscription_client.subscriptions.list())
     for sub in subscription_list:
         print('display_name: {}'.format(sub.display_name))
         print('id: {}'.format(sub.id))
