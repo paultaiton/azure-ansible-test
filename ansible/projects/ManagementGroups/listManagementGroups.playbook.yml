@@ -16,7 +16,12 @@
         recurse: "{{ az_mg_recurse | default(omit) }}"
       register: az_management_groups
 
-    # - name: Set subscription facts
-      # set_fact:
-        # az_management_group_id: "{{ az_subscriptions.subscriptions[0].fqid }}"
-        # az_management_group_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
+    - name: Debug Management Groups
+      debug:
+        var: az_management_groups.management_groups
+      when: az_management_groups.management_groups is defined
+
+    - name: Debug Subscription list
+      debug:
+        var: az_management_groups.subscriptions
+      when: az_management_groups.subscriptions is defined
