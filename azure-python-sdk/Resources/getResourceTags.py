@@ -25,6 +25,10 @@ if __name__ == "__main__":
         while not subscription_list:
             try:
                 subscription_list = [x for x in subscription_client.subscriptions.list() if x.display_name.lower() in subscription_names]
+                if not subscription_list:
+                    print('No subscriptions matched filter list "subscription_names".')
+                    exit()
+
             except CloudError as e:
                 print('EXCEPTION {}'.format(e))
                 sleep(10)
