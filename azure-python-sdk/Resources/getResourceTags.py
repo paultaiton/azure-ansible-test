@@ -9,7 +9,7 @@ from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
 # ### VARIABLE CONFIGURATIONS ####
-file_path = '/tmp/azure-rg-tags.csv'  # should be *.csv
+file_path = '/tmp/azure-resource-tags.csv'  # should be *.csv
 subscription_names = ["subscription-name-example"]  # list of strings of the full display name of desired subscriptions
 tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier", "snet", "servicerole"]  # tag key names to include in dump
 
@@ -25,7 +25,8 @@ if __name__ == "__main__":
         while not subscription_list:
             try:
                 subscription_list = [x for x in subscription_client.subscriptions.list() if x.display_name.lower() in subscription_names]
-            except CloudError:
+            except CloudError as e:
+                print('EXCEPTION {}'.format(e))
                 sleep(10)
 
         for subscription in subscription_list:
@@ -35,7 +36,8 @@ if __name__ == "__main__":
             while not rg_list:
                 try:
                     rg_list = resource_client.resource_groups.list()
-                except CloudError:
+                except CloudError as e:
+                    print('EXCEPTION {}'.format(e))
                     sleep(10)
             for rg in rg_list:
                 # Dictionary allows for .get() methods wich return NULL if not found.
@@ -48,7 +50,8 @@ if __name__ == "__main__":
                 while not resource_list:
                     try:
                         resource_list = resource_client.resources.list_by_resource_group(rg.name)
-                    except CloudError:
+                    except CloudError as e:
+                        print('EXCEPTION {}'.format(e))
                         sleep(10)
                 for resource in resource_list:
                     resource_dict = resource.as_dict()
