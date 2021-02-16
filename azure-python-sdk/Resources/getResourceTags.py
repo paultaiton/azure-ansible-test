@@ -10,12 +10,12 @@ from msrestazure.azure_exceptions import CloudError
 
 # ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/azure-resource-tags.csv'  # should be *.csv
-subscription_names = ["subscription-name-example"]  # list of strings of the full display name of desired subscriptions
+subscription_names = ["az-core-nonprod-01"]  # list of strings of the full display name of desired subscriptions
 tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier", "snet", "servicerole"]  # tag key names to include in dump
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
-    with open(file=file_path, mode='w') as csvfile:
+    with open(file=file_path, mode='w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Headers.
         csvwriter.writerow(["NAME", "SUBSCRIPTION", "GROUP", "TYPE"] + tag_names)
