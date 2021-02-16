@@ -9,29 +9,26 @@ from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
 
 # ### VARIABLE CONFIGURATIONS ####
-file_path = '/tmp/azure-rg-tags.csv'  # should be *.csv
-subscription_names = ["az-core-nonprod-01"]  # list of strings of the full display name of desired subscriptions
-tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier"]  # tag key names to include in dump
+file_path = '/tmp/azure-resource-tags.csv'  # should be *.csv
+subscription_names = ["az-subscription-name-01"]  # list of strings of the full display name of desired subscriptions
+tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier", "snet", "servicerole"]  # tag key names to include in dump
 
 if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
-    with open(file=file_path, mode='w', newline='') as csvfile:
+    with open(file=file_path, mode='w') as csvfile:
         csvwriter = csv.writer(csvfile)
-        # Headers
-        csvwriter.writerow(["RG NAME", "SUBSCRIPTION"]
-                           + [x.upper() for x in tag_names])
-
-        # Subscription names are not case sensitive in Azure, but python comparisons are.
-        subscription_names = [x.lower() for x in subscription_names]
+        # Headers.
+        csvwriter.writerow(["NAME", "SUBSCRIPTION", "GROUP", "TYPE"] + tag_names)
 
         subscription_list = None
+
         while not subscription_list:
-            # If Azure API gives error (like API limit), wait 10 seconds and try again.
             try:
                 subscription_list = [x for x in subscription_client.subscriptions.list() if x.display_name.lower() in subscription_names]
                 if not subscription_list:
                     print('No subscriptions matched filter list "subscription_names".')
                     exit()
+
             except CloudError as e:
                 print('EXCEPTION {}'.format(e))
                 sleep(10)
@@ -39,18 +36,13 @@ if __name__ == "__main__":
         for subscription in subscription_list:
             resource_client = get_client_from_cli_profile(ResourceManagementClient,
                                                           subscription_id=subscription.subscription_id)
-
-            rg_list = None
-            while not rg_list:
-                # If Azure API gives error (like API limit), wait 10 seconds and try again.
+            tag_list = None
+            while not tag_list:
                 try:
-                    rg_list = resource_client.resource_groups.list()
+                    tag_list = resource_client.tags.list()
+                    # tag_list = resource_client.tags.list()
                 except CloudError as e:
                     print('EXCEPTION {}'.format(e))
                     sleep(10)
-            for rg in rg_list:
-                # Dictionary allows for .get() methods wich return NULL if not found.
-                rg_dict = rg.as_dict()
-                name = rg.name
-                tag_values = [rg_dict.get('tags', {}).get(x) for x in tag_names]
-                csvwriter.writerow([rg.name, subscription.display_name] + tag_values)
+            for tag in tag_list:
+                print('{}'.format(tag.tag_name))

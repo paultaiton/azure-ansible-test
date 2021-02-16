@@ -10,7 +10,7 @@ from msrestazure.azure_exceptions import CloudError
 
 # ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/azure-resource-tags.csv'  # should be *.csv
-subscription_names = ["az-core-nonprod-01"]  # list of strings of the full display name of desired subscriptions
+subscription_names = ["az-sub-name-01", "az-sub-name-02"]  # list of strings of the full display name of desired subscriptions
 tag_names = ["costcenter", "environment", "portfolio", "appcode", "appname", "drtier", "snet", "servicerole"]  # tag key names to include in dump
 
 if __name__ == "__main__":
@@ -18,13 +18,20 @@ if __name__ == "__main__":
     with open(file=file_path, mode='w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Headers.
-        csvwriter.writerow(["NAME", "SUBSCRIPTION", "GROUP", "TYPE"] + tag_names)
+        csvwriter.writerow(["RESOURCE NAME", "SUBSCRIPTION", "GROUP", "TYPE"]
+                           + [x.upper() for x in tag_names])
+
+        # Subscription names are not case sensitive in Azure, but python comparisons are.
+        subscription_names = [x.lower() for x in subscription_names]
 
         subscription_list = None
-
         while not subscription_list:
+            # If Azure API gives error (like API limit), wait 10 seconds and try again.
             try:
                 subscription_list = [x for x in subscription_client.subscriptions.list() if x.display_name.lower() in subscription_names]
+                if not subscription_list:
+                    print('No subscriptions matched filter list "subscription_names".')
+                    exit()
             except CloudError as e:
                 print('EXCEPTION {}'.format(e))
                 sleep(10)
@@ -34,6 +41,7 @@ if __name__ == "__main__":
                                                           subscription_id=subscription.subscription_id)
             rg_list = None
             while not rg_list:
+                # If Azure API gives error (like API limit), wait 10 seconds and try again.
                 try:
                     rg_list = resource_client.resource_groups.list()
                 except CloudError as e:
