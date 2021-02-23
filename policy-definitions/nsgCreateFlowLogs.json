@@ -81,6 +81,37 @@
                 },
                 "resources": [
                   {
+                    // GOOD ONE
+                    "name": "flow-log-deployment",
+                    "type": "Microsoft.Network/networkWatchers/flowLogs",
+                    "apiVersion": "2020-07-01",
+                    "location": "string",
+                    "tags": {},
+                    "properties": {
+                      "targetResourceId": "string",
+                      "storageId": "string",
+                      "enabled": "boolean",
+                      "retentionPolicy": {
+                        "days": "integer",
+                        "enabled": "boolean"
+                      },
+                      "format": {
+                        "type": "JSON",
+                        "version": "integer"
+                      },
+                      "flowAnalyticsConfiguration": {
+                        "networkWatcherFlowAnalyticsConfiguration": {
+                          "enabled": "boolean",
+                          "workspaceId": "string",
+                          "workspaceRegion": "string",
+                          "workspaceResourceId": "string",
+                          "trafficAnalyticsInterval": "integer"
+                        }
+                      }
+                    }
+                  }
+                  {
+                    // ORIGINAL EXAMPLE
                     "type": "Microsoft.Resources/deployments",
                     "name": "[concat('flowlogDeployment-', uniqueString(parameters('flowlogName')))]",
                     "apiVersion": "2019-10-01",
