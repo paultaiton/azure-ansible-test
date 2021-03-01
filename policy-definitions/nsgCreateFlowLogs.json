@@ -36,7 +36,7 @@
         "effect": "deployIfNotExists",
         "details": {
           "type": "Microsoft.Network/networkWatchers/flowlogs",
-          "resourceGroupName": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), parameters('networkWatcherRG'), split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[4])]",
+          "resourceGroupName": "NetworkWatcherRG",
           "name": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id'))), 'null/null', concat(split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[8], '/', split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[10]))]",
           "existenceCondition": {
             "allOf": [
