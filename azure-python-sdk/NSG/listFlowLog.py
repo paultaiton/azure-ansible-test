@@ -4,6 +4,7 @@ from azure.common.client_factory import get_client_from_cli_profile
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.network import NetworkManagementClient
 from msrestazure.azure_exceptions import CloudError
+from msrestazure.tools import parse_resource_id
 
 # ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/flow_logs.csv'  # should be *.csv
@@ -36,15 +37,28 @@ if __name__ == "__main__":
 
         for subscription in subscription_list:
             network_client = get_client_from_cli_profile(NetworkManagementClient,
-                                                         subscription_id=subscription.id)
+                                                         subscription_id=parse_resource_id(subscription.id).get('subscription'))
 
+            network_watcher_list = None
+            while not network_watcher_list:
+                # If Azure API gives error (like API limit), wait 10 seconds and try again.
+                try:
+                    network_watcher_list = network_client.network_watchers.list_all()
+                    if not network_watcher_list:
+                        break  # if no flow logs found, go to next subscription without retrying.
+                except CloudError as e:
+                    print('EXCEPTION {}'.format(e))
+                    sleep(10)
+            for network_watcher in network_watcher_list:
             flow_log_list = None
             while not flow_log_list:
                 # If Azure API gives error (like API limit), wait 10 seconds and try again.
                 try:
-                    flow_log_list = network_client.flow_logs.list()
+                        flow_log_list = network_client.flow_logs.list(parse_resource_id(network_watcher.id).get('resource_group'), network_watcher.name)
+                        if not flow_log_list:
+                            break  # if no flow logs found, go to next subscription without retrying.
                 except CloudError as e:
                     print('EXCEPTION {}'.format(e))
                     sleep(10)
             for flowlog in flow_log_list:
-                pass
+                    print('')
