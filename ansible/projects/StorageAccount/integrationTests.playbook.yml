@@ -6,7 +6,7 @@
     #az_subscription_name: 
     #az_subscription_id: 
 
-    #   Optional filters:
+    #   Optional filters: WILL BE DELETED AT END
     az_resource_group_name: ansible-test-storage-accounts
     #az_resource_group_tags:
     #  - name: keyname
@@ -48,43 +48,45 @@
     - name: Storage Account Types
       azure.azcollection.azure_rm_storageaccount:
         name: "ptxa{{ item.name  | lower }}"
-        account_type: "{{ item.type | default(omit) }}"
+        account_type: "{{ item.type }}"  # cannot be omitted.
         resource_group: "{{ az_resource_group_name }}"
         subscription_id: "{{ az_subscription_id | default(omit) }}"
         kind: "{{ item.kind | default('StorageV2') }}"
         access_tier: "{{ item.access_tier | default(omit) }}"
+        https_only: "{{ item.https_only | default(omit) }}"
+        minimum_tls_version: "{{ item.minimum_tls_version | default(omit) }}"
+        allow_blob_public_access: "{{ item.allow_blob_public_access | default(omit) }}"
       register: az_storage_account
       loop:
+        - name: Default
+          type: Standard_LRS
         - name: Storage
           kind: Storage
+          type: Standard_LRS
+          https_only: False
         - kind: StorageV2
           name: StorageV2
+          type: Standard_LRS
+          minimum_tls_version: 'TLS1_1'
         - kind: BlobStorage
           name: BlobStorage
           access_tier: Hot
+          type: Standard_LRS
+          allow_blob_public_access: False
         - kind: FileStorage
           name: FileStorage
-          # type: Premium_LRS
+          type: Premium_LRS
+          allow_blob_public_access: True
         - kind: BlockBlobStorage
           name: BlockBlobStorage
-          # type: Premium_LRS
-
-    - debug:
-        var: az_storage_account
+          type: Premium_LRS
 
     - set_fact:
         storage_name_list: "{{ (storage_name_list | default([]) ) | union(az_storage_account.results | json_query('[*].state.name') ) }}"
 
-    - name: Delete Storage Accounts
-      azure.azcollection.azure_rm_storageaccount:
-        name: "{{ item }}"
-        resource_group: "{{ az_resource_group_name }}"
-        state: absent
-      loop: "{{ storage_name_list }}"
-
-      # kind: "Storage" dict(type='str', default='StorageV2', choices=['Storage', 'StorageV2', 'BlobStorage', 'FileStorage', 'BlockBlobStorage']),
-    - name: Gather subscription information
+    - name: Delete Resource Group
       azure.azcollection.azure_rm_resourcegroup:
         name: "{{ az_resource_group_name }}"
+        force_delete_nonempty: True
         state: absent
 
