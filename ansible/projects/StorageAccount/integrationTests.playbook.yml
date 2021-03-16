@@ -28,6 +28,12 @@
         az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
       when: not az_subscriptions.skipped | default(false)
 
+    - name: Create resource Group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ az_resource_group_name }}"
+        location: 'westus'
+        state: present
+
     - name: Default Storage Account
       azure.azcollection.azure_rm_storageaccount:
         name: "paultaitondefaults"
@@ -77,3 +83,8 @@
       loop: "{{ storage_name_list }}"
 
       # kind: "Storage" dict(type='str', default='StorageV2', choices=['Storage', 'StorageV2', 'BlobStorage', 'FileStorage', 'BlockBlobStorage']),
+    - name: Gather subscription information
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ az_resource_group_name }}"
+        state: absent
+
