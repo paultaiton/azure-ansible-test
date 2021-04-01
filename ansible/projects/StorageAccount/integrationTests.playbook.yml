@@ -7,7 +7,7 @@
     #az_subscription_id: 
 
     #   Optional filters: WILL BE DELETED AT END
-    az_resource_group_name: ansible-test-storage-accounts
+    az_resource_group_name: ansible-integration-test-a
     #az_resource_group_tags:
     #  - name: keyname
     #    value: keyvalue
@@ -89,4 +89,3 @@
         name: "{{ az_resource_group_name }}"
         force_delete_nonempty: True
         state: absent
-
