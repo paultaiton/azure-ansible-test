@@ -9,6 +9,13 @@
           "strongType": "location"
         }
       },
+      "flowLogResourceGroup": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Flow Log Resource Group Name",
+          "description": "The name of the Resource Group where the Flow Log will exist."
+        }
+      },
       "storageId": {
         "type": "String",
         "metadata": {
@@ -36,8 +43,10 @@
         "effect": "deployIfNotExists",
         "details": {
           "type": "Microsoft.Network/networkWatchers/flowlogs",
-          "resourceGroupName": "NetworkWatcherRG",
-          "name": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id'))), 'null/null', concat(split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[8], '/', split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[10]))]",
+          "resourceGroupName": "[parameter('flowLogResourceGroup')]",
+          "name": "[concat( 
+            
+            )]",
           "existenceCondition": {
             "allOf": [
               {
