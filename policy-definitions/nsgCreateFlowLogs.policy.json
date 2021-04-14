@@ -9,22 +9,34 @@
           "strongType": "location"
         }
       },
-      "flowLogResourceGroup": {
+      "networkWatcherResourceGroupName": {
         "type": "String",
         "metadata": {
-          "displayName": "Flow Log Resource Group Name",
-          "description": "The name of the Resource Group where the Flow Log will exist."
+          "displayName": "Network Watcher Resource Group Name",
+          "description": "The name of the Resource Group where the Network watcher and Flow Log will exist."
         }
       },
+//      "networkWatcherName": {
+//        "type": "string",
+//        "metadata": {
+//          "displayName": "Network Watcher resource name",
+//          "description": "The name of the Network Watcher resource."
+//        }
+//      },
       "storageId": {
         "type": "String",
         "metadata": {
           "displayName": "Storage id",
-          "description": "A string with the storage id for the flowlogs to be sent to. It will be used for deployment purposes only. Make sure this storage account is located in the same region as the NSG. The format must be: '/subscriptions/{subscription id}/resourceGroups/{resourceGroup name}/providers/Microsoft.Storage/storageAccounts/{storage account name}",
-          "assignPermissions": "true"
+          "description": "A string with the storage id for the flowlogs to be sent to. It will be used for deployment purposes only. Make sure this storage account is located in the same region as the NSG. The format must be: '/subscriptions/{subscription id}/resourceGroups/{resourceGroup name}/providers/Microsoft.Storage/storageAccounts/{storage account name}"
         }
       },
-      "logAnalyticsWorkspace": "none"
+      "logAnalyticsWorkspaceId": {
+        "type": "String",
+        "metadata": {
+          "displayName": "LogAnalytics Workspace ID",
+          "description": "A string with the id of the loganalytics workspace."
+        }
+      }
     },
     "policyRule": {
       "if": {
@@ -43,10 +55,8 @@
         "effect": "deployIfNotExists",
         "details": {
           "type": "Microsoft.Network/networkWatchers/flowlogs",
-          "resourceGroupName": "[parameter('flowLogResourceGroup')]",
-          "name": "[concat( 
-            
-            )]",
+          "resourceGroupName": "[parameter('networkWatcherResourceGroupName')]",
+          "name": "[concat(split(field('name'), '/')[0], '-', split(field('name'), '/')[1], '-', split(field('name'), '/')[2], '-', split(field('name'), '/')[3], '-', split(field('name'), '/')[4], '-', 'nwfl', '-', split(field('name'), '/')[6])]",
           "existenceCondition": {
             "allOf": [
               {
@@ -56,6 +66,10 @@
               {
                 "field": "Microsoft.Network/networkWatchers/flowLogs/storageId",
                 "equals": "[parameters('storageId')]"
+              },
+              {
+                "field": "Microsoft.Network/networkWatchers/flowLogs/flowAnalyticsConfiguration/networkWatcherFlowAnalyticsConfiguration/workspaceId",
+                "equals": "[parameters('logAnalyticsWorkspaceId')]"
               }
             ]
           },
@@ -90,37 +104,6 @@
                 },
                 "resources": [
                   {
-                    // GOOD ONE
-                    "name": "flow-log-deployment",
-                    "type": "Microsoft.Network/networkWatchers/flowLogs",
-                    "apiVersion": "2020-07-01",
-                    "location": "string",
-                    "tags": {},
-                    "properties": {
-                      "targetResourceId": "string",
-                      "storageId": "string",
-                      "enabled": "boolean",
-                      "retentionPolicy": {
-                        "days": "integer",
-                        "enabled": "boolean"
-                      },
-                      "format": {
-                        "type": "JSON",
-                        "version": "integer"
-                      },
-                      "flowAnalyticsConfiguration": {
-                        "networkWatcherFlowAnalyticsConfiguration": {
-                          "enabled": "boolean",
-                          "workspaceId": "string",
-                          "workspaceRegion": "string",
-                          "workspaceResourceId": "string",
-                          "trafficAnalyticsInterval": "integer"
-                        }
-                      }
-                    }
-                  }
-                  {
-                    // ORIGINAL EXAMPLE
                     "type": "Microsoft.Resources/deployments",
                     "name": "[concat('flowlogDeployment-', uniqueString(parameters('flowlogName')))]",
                     "apiVersion": "2019-10-01",
@@ -134,17 +117,30 @@
                         "parameters": {},
                         "resources": [
                           {
+                            "name": "flow-log-deployment",
                             "type": "Microsoft.Network/networkWatchers/flowLogs",
-                            "name": "[concat(parameters('networkWatcherName'), '/', parameters('flowlogName'))]",
-                            "apiVersion": "2019-11-01",
-                            "location": "[parameters('location')]",
+                            "apiVersion": "2020-07-01",
+                            "location": "string",
                             "properties": {
-                              "targetResourceId": "[parameters('targetResource')]",
-                              "storageId": "[parameters('storageId')]",
-                              "enabled": "true",
+                              "targetResourceId": "[parameter('targetResource')]",
+                              "storageId": "[parameter('storageId')]",
+                              "enabled": true,
                               "retentionPolicy": {
-                                "days": "0",
-                                "enabled": "false"
+                                "days": 30,
+                                "enabled": true
+                              },
+                              "format": {
+                                "type": "JSON",
+                                "version": 2
+                              },
+                              "flowAnalyticsConfiguration": {
+                                "networkWatcherFlowAnalyticsConfiguration": {
+                                  "enabled": true,
+                                  "workspaceId": "string",
+                                  "workspaceRegion": "[parameter('location')]",
+                                  "workspaceResourceId": "[parameter('logAnalyticsWorkspaceId')]",
+                                  "trafficAnalyticsInterval": 10
+                                }
                               }
                             }
                           }
@@ -159,19 +155,16 @@
                   "value": "[parameters('storageId')]"
                 },
                 "networkWatcherRG": {
-                  "value": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), parameters('networkWatcherRG'), split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[4])]"
-                },
-                "networkWatcherName": {
-                  "value": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), parameters('networkWatcherName'), split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[8])]"
+                  "value": "[parameter('networkWatcherResourceGroupName')]"
                 },
                 "flowlogName": {
-                  "value": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), concat(field('name'), '-', resourceGroup().name, '-', 'flowlog'), split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[10])]"
+                  "value": "[concat(split(field('name'), '/')[0], '-', split(field('name'), '/')[1], '-', split(field('name'), '/')[2], '-', split(field('name'), '/')[3], '-', split(field('name'), '/')[4], '-', 'nwfl', '-', split(field('name'), '/')[6])]"
                 },
                 "location": {
                   "value": "[field('location')]"
                 },
                 "targetResource": {
-                  "value": "[concat(resourceGroup().id, '/providers/Microsoft.Network/networkSecurityGroups/', field('name'))]"
+                  "value": "[field('id)']"
                 }
               }
             }
