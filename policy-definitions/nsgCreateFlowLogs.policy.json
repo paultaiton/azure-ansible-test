@@ -16,13 +16,6 @@
           "description": "The name of the Resource Group where the Network watcher and Flow Log will exist."
         }
       },
-//      "networkWatcherName": {
-//        "type": "string",
-//        "metadata": {
-//          "displayName": "Network Watcher resource name",
-//          "description": "The name of the Network Watcher resource."
-//        }
-//      },
       "storageId": {
         "type": "String",
         "metadata": {
@@ -117,10 +110,10 @@
                         "parameters": {},
                         "resources": [
                           {
-                            "name": "flow-log-deployment",
+                            "name": "[parameters('flowlogName')]",
                             "type": "Microsoft.Network/networkWatchers/flowLogs",
                             "apiVersion": "2020-07-01",
-                            "location": "string",
+                            "location": "[parameters('location')]",
                             "properties": {
                               "targetResourceId": "[parameters('targetResource')]",
                               "storageId": "[parameters('storageId')]",
