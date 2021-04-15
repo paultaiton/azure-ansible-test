@@ -50,15 +50,15 @@ if __name__ == "__main__":
                     print('EXCEPTION {}'.format(e))
                     sleep(10)
             for network_watcher in network_watcher_list:
-            flow_log_list = None
-            while not flow_log_list:
-                # If Azure API gives error (like API limit), wait 10 seconds and try again.
-                try:
+                flow_log_list = None
+                while not flow_log_list:
+                    # If Azure API gives error (like API limit), wait 10 seconds and try again.
+                    try:
                         flow_log_list = network_client.flow_logs.list(parse_resource_id(network_watcher.id).get('resource_group'), network_watcher.name)
                         if not flow_log_list:
                             break  # if no flow logs found, go to next subscription without retrying.
-                except CloudError as e:
-                    print('EXCEPTION {}'.format(e))
-                    sleep(10)
-            for flowlog in flow_log_list:
+                    except CloudError as e:
+                        print('EXCEPTION {}'.format(e))
+                        sleep(10)
+                for flowlog in flow_log_list:
                     print('')
