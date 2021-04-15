@@ -48,7 +48,7 @@
     "then": {
       "effect": "deployIfNotExists",
       "details": {
-        "type": "Microsoft.Network/networkWatchers/flowlogs",
+        "type": "Microsoft.Network/networkWatchers/flowLogs",
         "resourceGroupName": "[parameters('networkWatcherResourceGroupName')]",
         "name": "[concat(split(field('name'), '-')[0], '-', split(field('name'), '-')[1], '-', split(field('name'), '-')[2], '-', split(field('name'), '-')[3], '-', split(field('name'), '-')[4], '-', 'nwfl', '-', split(field('name'), '-')[6])]",
         "existenceCondition": {
