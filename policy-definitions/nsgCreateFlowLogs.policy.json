@@ -50,7 +50,7 @@
         "details": {
           "type": "Microsoft.Network/networkWatchers/flowLogs",
           "resourceGroupName": "[parameters('networkWatcherResourceGroupName')]",
-          "name": "[concat(split(field('name'), '-')[0], '-', split(field('name'), '-')[1], '-', split(field('name'), '-')[2], '-', split(field('name'), '-')[3], '-', split(field('name'), '-')[4], '-', 'nwfl', '-', split(field('name'), '-')[6])]",
+          "name": "[replace(field('name'), '-nsg-', '-nwfl-')]",
           "existenceCondition": {
             "allOf": [
               {
@@ -154,7 +154,7 @@
                   "value": "[parameters('networkWatcherResourceGroupName')]"
                 },
                 "flowlogName": {
-                  "value": "[concat(split(field('name'), '-')[0], '-', split(field('name'), '-')[1], '-', split(field('name'), '-')[2], '-', split(field('name'), '-')[3], '-', split(field('name'), '-')[4], '-', 'nwfl', '-', split(field('name'), '-')[6])]"
+                  "value": "[replace(field('name'), '-nsg-', '-nwfl-')]"
                 },
                 "location": {
                   "value": "[field('location')]"
