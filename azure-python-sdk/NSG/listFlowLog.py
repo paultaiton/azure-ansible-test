@@ -9,7 +9,7 @@ from msrestazure.tools import parse_resource_id
 # ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/flow_logs.csv'  # should be *.csv
 subscription_names = ["az-subscription-name-01"]  # list of strings of the full display name of desired subscriptions
-property_names = ["display_name"]  # tag key names to include in dump
+property_names = ["location", "NSG", "la workspace", "storage account", "type"]  # tag key names to include in dump
 
 if __name__ == "__main__":
     print('')  # I like clean breaks
@@ -61,4 +61,12 @@ if __name__ == "__main__":
                         print('EXCEPTION {}'.format(e))
                         sleep(10)
                 for flowlog in flow_log_list:
-                    print('')
+                    flowlog_id_dict = parse_resource_id(flowlog.id)
+                    csvwriter.writerow([flowlog.name,
+                                        subscription.display_name,
+                                        flowlog_id_dict.get('resource_group'),
+                                        flowlog.location,
+                                        flowlog.target_resource_id,
+                                        flowlog.flow_analytics_configuration.network_watcher_flow_analytics_configuration.workspace_resource_id,
+                                        flowlog.storage_id,
+                                        flowlog.type])
