@@ -67,7 +67,8 @@ if __name__ == "__main__":
                                         subscription.display_name,
                                         flowlog_id_dict.get('resource_group'),
                                         flowlog_dict.get('location'),
-                                        flowlog_dict.get('target_resource_id'),
-                                        flowlog_dict.get('flow_analytics_configuration', {}).get('network_watcher_flow_analytics_configuration', {}).get('workspace_resource_id'),
-                                        flowlog_dict.get('storage_id'),
+                                        parse_resource_id(flowlog_dict.get('flow_analytics_configuration', {}).get('network_watcher_flow_analytics_configuration', {}).get('workspace_resource_id')).get('name'),
+                                        parse_resource_id(flowlog_dict.get('storage_id')).get('name'),
+                                        parse_resource_id(flowlog_dict.get('target_resource_id')).get('name'),
+                                        parse_resource_id(flowlog_dict.get('target_resource_id')).get('resource_group'),
                                         flowlog_dict.get('type')])
