@@ -62,11 +62,12 @@ if __name__ == "__main__":
                         sleep(10)
                 for flowlog in flow_log_list:
                     flowlog_id_dict = parse_resource_id(flowlog.id)
+                    flowlog_dict = flowlog.as_dict()
                     csvwriter.writerow([flowlog.name,
                                         subscription.display_name,
                                         flowlog_id_dict.get('resource_group'),
-                                        flowlog.location,
-                                        flowlog.target_resource_id,
-                                        flowlog.flow_analytics_configuration.network_watcher_flow_analytics_configuration.workspace_resource_id,
-                                        flowlog.storage_id,
-                                        flowlog.type])
+                                        flowlog_dict.get('location'),
+                                        flowlog_dict.get('target_resource_id'),
+                                        flowlog_dict.get('flow_analytics_configuration', {}).get('network_watcher_flow_analytics_configuration', {}).get('workspace_resource_id'),
+                                        flowlog_dict.get('storage_id'),
+                                        flowlog_dict.get('type')])
