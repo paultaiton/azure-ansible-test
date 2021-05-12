@@ -10,6 +10,7 @@ from msrestazure.tools import parse_resource_id
 file_path = '/tmp/flow_logs.csv'  # should be *.csv
 subscription_names = ["az-subscription-name-01"]  # list of strings of the full display name of desired subscriptions
 property_names = ["location", "NSG", "la workspace", "storage account", "type"]  # tag key names to include in dump
+property_names = ["location", "la workspace", "storage account", "NSG Name", "NSG RG", "type"]  # tag key names to include in dump
 
 if __name__ == "__main__":
     print('')  # I like clean breaks
