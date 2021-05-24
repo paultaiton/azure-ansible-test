@@ -1,0 +1,27 @@
+---
+- name: Virtual Machine List Play
+  hosts: localhost
+  vars:
+    ##-- Defaulted
+    # az_subscription_name: ""
+    az_location: "westus"
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Gather subscription information
+      azure.azcollection.azure_rm_subscription_info:
+        name: "{{ az_subscription_name | default(omit) }}"
+      register: az_subscriptions
+      when: az_subscription_name is defined
+
+    - name: Set subscription facts
+      set_fact:
+        az_subscription_id: "{{ az_subscriptions.subscriptions[0].subscription_id }}"
+        az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
+
+    - name: List Virtual Machines
+      azure.azcollection.azure_rm_resource_info:
+        url: "/subscriptions/{{ az_subscription_id }}/providers/Microsoft.Capacity/resourceProviders/Microsoft.Compute/locations/{{ az_location }}/serviceLimits?api-version=2020-10-25"
+      register: az_quotas
+
