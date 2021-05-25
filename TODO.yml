@@ -4,6 +4,9 @@ azure_rm_managed_disk:
 azure-storage:
   - package deprecated in pip.
 
+azure_rm_storageaccount:
+  storageaccount and info modules have different return values
+
 azure_rm_virtualmachine:
   - can add existing datadisks by id at provision time
 
