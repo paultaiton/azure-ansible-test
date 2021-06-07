@@ -18,3 +18,4 @@ azure_rm_roleassignment:
 
 azure_rm_securitygroup:
   - C:\Users\paul\Documents\vscode-workspace\ansible-azure-network\Azure\addCommonServiceRule.py
+
