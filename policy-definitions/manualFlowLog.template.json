@@ -1,0 +1,83 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "String"
+        },
+        "name": {
+            "type": "String"
+        },
+        "targetResourceId": {
+            "type": "String"
+        },
+        "storageId": {
+            "type": "String"
+        },
+        "enabled": {
+            "type": "Bool"
+        },
+        "version": {
+            "type": "Int"
+        },
+        "trafficAnalyticsEnabled": {
+            "type": "Bool"
+        },
+        "workspaceId": {
+            "type": "String"
+        },
+        "workspaceRegion": {
+            "type": "String"
+        },
+        "workspaceResourceId": {
+            "type": "String"
+        },
+        "trafficAnalyticsInterval": {
+            "type": "Int"
+        },
+        "retentionPolicyDays": {
+            "type": "Int"
+        },
+        "retentionPolicyEnabled": {
+            "type": "Bool"
+        }
+    },
+    "variables": {
+        "networkWatcherName": "NetworkWatcher_westus",
+        "storageAccountName": "acflabslognonprodst01",
+        "storageAccountLocation": "westus",
+        "storageAccountType": "Microsoft.Storage/storageAccounts",
+        "storageAccountKind": "StorageV2"
+    },
+    "resources": [
+        {
+            "type": "microsoft.network/networkwatchers/flowlogs",
+            "name": "[concat(variables('networkWatcherName'), '/', parameters('name'))]",
+            "apiVersion": "2020-05-01",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "properties": {
+                "targetResourceId": "[parameters('targetResourceId')]",
+                "storageId": "[parameters('storageId')]",
+                "enabled": "[parameters('enabled')]",
+                "retentionPolicy": {
+                    "days": "[parameters('retentionPolicyDays')]",
+                    "enabled": "[parameters('retentionPolicyEnabled')]"
+                },
+                "format": {
+                    "type": "JSON",
+                    "version": "[parameters('version')]"
+                },
+                "flowAnalyticsConfiguration": {
+                    "networkWatcherFlowAnalyticsConfiguration": {
+                        "enabled": "[parameters('trafficAnalyticsEnabled')]",
+                        "workspaceId": "[parameters('workspaceId')]",
+                        "workspaceRegion": "[parameters('workspaceRegion')]",
+                        "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                        "trafficAnalyticsInterval": "[parameters('trafficAnalyticsInterval')]"
+                    }
+                }
+            }
+        }
+    ]
+}
