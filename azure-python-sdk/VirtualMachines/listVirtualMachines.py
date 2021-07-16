@@ -17,6 +17,13 @@ if __name__ == "__main__":
 #   compute_list = compute_client.virtual_machines.list_by_location(location=location)
 #   compute_list = compute_client.virtual_machines.list_available_sizes(resource_group_name=resource_group_name, vm_name=vm_name)
 #   compute_list = [compute_client.virtual_machines.get(resource_group_name=resource_group_name, vm_name=vm_name)]
+    compute_usage = compute_client.usage.list(location='westus')
+    print('###################################')
+    for item in compute_usage:
+        print('Name: {}'.format(item.name.value))
+        print('Limit: {}'.format(item.limit))
+        print('Current Value: {}'.format(item.current_value))
+        print('')
     print('###################################')
     for vm in compute_list:
         print(vm.availability_set)
