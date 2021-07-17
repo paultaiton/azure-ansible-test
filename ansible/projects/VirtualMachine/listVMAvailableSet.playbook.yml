@@ -1,0 +1,38 @@
+---
+- name: Virtual Machine List Play
+  hosts: localhost
+  vars:
+    ##-- REQUIRED
+    # az_resource_group_name:
+
+    ##-- Defaulted
+    az_subscription_name: "{{ az_resource_group_name.split('-')[0:4] | default(omit) | join('-') }}"
+
+  gather_facts: no # not necessary at this time; localhost provides no useful info.
+  collections:
+    - azure.azcollection
+  tasks:
+
+    - name: Gather subscription information
+      azure.azcollection.azure_rm_subscription_info:
+        name: "{{ az_subscription_name | default(omit) }}"
+      register: az_subscriptions
+      when: az_subscription_name is defined
+
+    - name: Set subscription facts
+      set_fact:
+        az_subscription_id: "{{ az_subscriptions.subscriptions[0].subscription_id }}"
+        az_subscription_name: "{{ az_subscriptions.subscriptions[0].display_name }}"
+
+    - name: List Resource Groups
+      azure.azcollection.azure_rm_resourcegroup_info:
+        name: "{{ az_resource_group_name | default(omit) }}"
+        subscription_id: "{{ az_subscription_id | default(omit) }}"
+      register: az_resource_groups
+      when: az_resource_group_name is defined
+
+    - name: List Virtual Machines
+      azure.azcollection.azure_rm_availabilityset_info:
+        resource_group: "{{ az_resource_groups.resourcegroups[0].name | default(omit) }}"
+        subscription_id: "{{ az_subscription_id | default(omit) }}"
+      register: az_av_set
