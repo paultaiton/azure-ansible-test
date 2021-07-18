@@ -9,6 +9,7 @@
   collections:
     - azure.azcollection
   tasks:
+
     - name: Gather subscription information
       azure.azcollection.azure_rm_subscription_info:
         name: "{{ az_subscription_name | default(omit) }}"
