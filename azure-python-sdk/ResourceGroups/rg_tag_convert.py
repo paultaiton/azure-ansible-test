@@ -54,3 +54,8 @@ if __name__ == "__main__":
                     new_tags["old" + tag_name] = rg.tags.get(tag_name)
                     new_tags[tag_name] = tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name)))
                     resource_client.resource_groups.create_or_update(rg.name, {"location": rg.location, "tags": new_tags})  # location is required for reasons.
+            # SECTION TO UNDO
+            # if rg.tags.get("old" + tag_name):
+            #     new_tags = rg.tags
+            #     new_tags[tag_name] = rg.tags.get("old" + tag_name)
+            #     resource_client.resource_groups.create_or_update(rg.name, {"location": rg.location, "tags": new_tags})  # location is required for reasons.
