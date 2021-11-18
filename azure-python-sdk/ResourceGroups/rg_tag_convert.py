@@ -51,8 +51,6 @@ if __name__ == "__main__":
                 # if tag_conversion_dictionary.get(rg.tags.get(tag_name)):
                 if tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name))):  # filter for only digits before lookup in tag dict
                     new_tags = rg.tags
+                    new_tags["old" + tag_name] = rg.tags.get(tag_name)
                     new_tags[tag_name] = tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name)))
                     resource_client.resource_groups.create_or_update(rg.name, {"location": rg.location, "tags": new_tags})  # location is required for reasons.
-                    print(rg.name)
-                    print(rg.tags)
-                    print('')
