@@ -15,7 +15,6 @@ tag_name = 'costcenter'
 if __name__ == "__main__":
     with open(tag_name + "_conversion_values.json", "r") as tag_file:
         tag_conversion_dictionary = json.loads(tag_file.read())
-    print('')  # I like clean breaks
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
 
     # Subscription names are not case sensitive in Azure, but python comparisons are.
@@ -34,6 +33,7 @@ if __name__ == "__main__":
             sleep(10)
 
     for subscription in subscription_list:
+        print('Updating RG tag {0} in subscription {1}'.format(tag_name, subscription.display_name))
         resource_client = get_client_from_cli_profile(ResourceManagementClient,
                                                       subscription_id=subscription.subscription_id)
 
@@ -45,6 +45,7 @@ if __name__ == "__main__":
             except CloudError as e:
                 print('EXCEPTION {}'.format(e))
                 sleep(10)
+
         for rg in rg_list:
             if rg.tags.get(tag_name):
                 # TODO for a generic tag value converter, we need to get rid of the regex substitution to only digits
@@ -53,6 +54,10 @@ if __name__ == "__main__":
                     new_tags = rg.tags
                     new_tags["old" + tag_name] = rg.tags.get(tag_name)
                     new_tags[tag_name] = tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name)))
+                    print('  Updating resource group {0}, {1} tag value {2} to {3}'.format(rg.name,
+                                                                                           tag_name,
+                                                                                           new_tags.get("old" + tag_name),
+                                                                                           new_tags.get(tag_name)))
                     resource_client.resource_groups.create_or_update(rg.name, {"location": rg.location, "tags": new_tags})  # location is required for reasons.
             # SECTION TO UNDO
             # if rg.tags.get("old" + tag_name):
