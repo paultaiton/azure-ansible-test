@@ -7,10 +7,11 @@ from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.resources import ResourceManagementClient
 from msrestazure.tools import parse_resource_id
 from msrestazure.azure_exceptions import CloudError
+from time import sleep
 
 # ### VARIABLE CONFIGURATIONS ####
 file_path = '/tmp/azure-resource-different-rg-tags.csv'  # should be *.csv
-tag_names = [ "costcenter", "appcode" ]  # tag key names to include in dump
+tag_names = ["costcenter", "appcode"]  # tag key names to include in dump
 subscription_names = [
     "az-sub-name-01",
     "az-sub-name-02"
@@ -22,7 +23,7 @@ if __name__ == "__main__":
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["RESOURCE NAME", "RESOURCE GROUP NAME", "SUBSCRIPTION", "GROUP", "TYPE"]
                            + [x.upper() for x in tag_names]
-                           + [( 'rg ' + x.upper()) for x in tag_names])
+                           + [('rg ' + x.upper()) for x in tag_names])
 
         # Subscription names are not case sensitive in Azure, but python comparisons are.
         subscription_names = [x.lower() for x in subscription_names]
