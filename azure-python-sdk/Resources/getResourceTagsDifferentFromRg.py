@@ -21,9 +21,9 @@ if __name__ == "__main__":
     subscription_client = get_client_from_cli_profile(SubscriptionClient)
     with open(file=file_path, mode='w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(["RESOURCE NAME", "RESOURCE GROUP NAME", "SUBSCRIPTION", "GROUP", "TYPE"]
+        csvwriter.writerow(["RESOURCE NAME", "RESOURCE GROUP NAME", "SUBSCRIPTION", "TYPE"]
                            + [x.upper() for x in tag_names]
-                           + [('rg ' + x.upper()) for x in tag_names])
+                           + [('RG ' + x.upper()) for x in tag_names])
 
         # Subscription names are not case sensitive in Azure, but python comparisons are.
         subscription_names = [x.lower() for x in subscription_names]
@@ -65,11 +65,10 @@ if __name__ == "__main__":
                         print('EXCEPTION {}'.format(e))
                         sleep(10)
                 for resource in resource_list:
+                    resource_dict = resource.as_dict()
                     tags_differ = False
                     for tag_name in tag_names:
-                        tags_differ = tags_differ or (resource.tags.get(tag_name) != rg.tags.get(tag_name))
+                        tags_differ = tags_differ or (resource_dict.get('tags', {}).get(tag_name) != rg_dict.get('tags', {}).get(tag_name))
                     if tags_differ:
-                        resource_dict = resource.as_dict()
                         resource_tag_values = [resource_dict.get('tags', {}).get(x) for x in tag_names]
-
-                        csvwriter.writerow([resource.name, subscription.display_name, rg.name, resource.type] + resource_tag_values + rg_tag_values)
+                        csvwriter.writerow([resource.name, rg.name, subscription.display_name, resource.type] + resource_tag_values + rg_tag_values)
