@@ -16,6 +16,8 @@ subscription_names = [
 ]  # list of strings of the full display name of desired subscriptions
 tag_name = 'costcenter'
 
+provider_api_dict = dict()
+
 if __name__ == "__main__":
     with open(tag_name + "_conversion_values.json", "r") as tag_file:
         tag_conversion_dictionary = json.loads(tag_file.read())
@@ -52,6 +54,7 @@ if __name__ == "__main__":
 
         for rg in rg_list:
             new_tags = rg.tags
+            resource_dict = rg.as_dict()
             if new_tags and not new_tags.get(tag_name):
                 # Azure returns a case sensitive tag dictionary for key names that are in other cases insensitive.
                 # This if block will find those tags where the case sensitive tag_name isn't found, but a
@@ -72,12 +75,34 @@ if __name__ == "__main__":
                                                                                            new_tags.get("old" + tag_name),
                                                                                            new_tags.get(tag_name)))
 
+                resource_type = resource_dict.get('type')
+                if not provider_api_dict.get(resource_type.lower()):
+                    print('  Provider lookup for {0} namespace, triggered by type {1}.'.format(resource_type.split('/')[0],
+                                                                                                ''.join(resource_type.split('/')[1:])))
+                    provider = None
+                    while not provider:
+                        try:
+                            # get call will fetch all versions within the top namespace at once.
+                            provider = resource_client.providers.get(resource_provider_namespace=resource_type.split('/')[0])
+                        except CloudError as e:
+                            print('EXCEPTION {}'.format(e))
+                            sleep(10)
+
+                    for type in provider.resource_types:
+                        # And we cache all the discrete types separately.
+                        provider_api_dict['/'.join([provider.namespace.lower(),
+                                                    type.resource_type.lower()])] = type.api_versions[0]
+
                     update_results = False
                     while not update_results:
                         try:
                             # location is required for reasons, even if it's not applicable for an "update" operation.
                             update_results = True  # comment out to preserve retries after API throttling.
-                            update_results = resource_client.resource_groups.update(rg.name, {"location": rg.location, "tags": new_tags})
+                            # update_results = resource_client.resource_groups.update(rg.name, {"tags": new_tags})
+
+                            update_results = resource_client.resources.begin_update_by_id(resource_id=rg.id,
+                                                                                    api_version=provider_api_dict[resource_type.lower()],
+                                                                                    parameters={"tags": new_tags})
                         except CloudError as e:
                             print('EXCEPTION {}'.format(e))
                             # sleep(10)  # uncomment if you need to pause during API throtting.

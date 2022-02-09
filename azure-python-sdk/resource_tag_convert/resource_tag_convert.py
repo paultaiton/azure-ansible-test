@@ -12,6 +12,8 @@ import json
 subscription_names = ["az-subscription-name-01"]  # list of strings of the full display name of desired subscriptions
 tag_name = 'costcenter'  # as currently written only costcenter is supported. See TODO below to change.
 
+provider_api_dict = dict()
+
 if __name__ == "__main__":
     with open(tag_name + "_conversion_values.json", "r") as tag_file:
         tag_conversion_dictionary = json.loads(tag_file.read())
@@ -70,10 +72,29 @@ if __name__ == "__main__":
                                                                                          tag_name,
                                                                                          new_tags.get("old" + tag_name),
                                                                                          new_tags.get(tag_name)))
-                        resource_client.resources.begin_update_by_id(resource.id,
-                                                                     resource_client.DEFAULT_API_VERSION,
-                                                                     {"location": rg.location,  # location is required for reasons.
-                                                                      "tags": new_tags})
+
+                        resource_type = resource_dict.get('type')
+                        if not provider_api_dict.get(resource_type.lower()):
+                            print('  Provider lookup for {0} namespace, triggered by type {1}.'.format(resource_type.split('/')[0],
+                                                                                                       ''.join(resource_type.split('/')[1:])))
+                            provider = None
+                            while not provider:
+                                try:
+                                    # get call will fetch all versions within the top namespace at once.
+                                    provider = resource_client.providers.get(resource_provider_namespace=resource_type.split('/')[0])
+                                except CloudError as e:
+                                    print('EXCEPTION {}'.format(e))
+                                    sleep(10)
+
+                            for type in provider.resource_types:
+                                # And we cache all the discrete types separately.
+                                provider_api_dict['/'.join([provider.namespace.lower(),
+                                                            type.resource_type.lower()])] = type.api_versions[0]
+
+                        resource_client.resources.update_by_id(resource_id=resource.id,
+                                                               api_version=provider_api_dict[resource_type.lower()],
+                                                               parameters={"tags": new_tags})
+
                     # # # SECTION TO UNDO
                     # if resource.tags.get("old" + tag_name):
                     #     new_tags = resource.tags
