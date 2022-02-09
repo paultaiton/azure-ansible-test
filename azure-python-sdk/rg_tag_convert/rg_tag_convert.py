@@ -9,7 +9,11 @@ import re
 import json
 
 # ### VARIABLE CONFIGURATIONS ####
-subscription_names = ["az-subscription-name-01"]  # list of strings of the full display name of desired subscriptions
+subscription_names = [
+    "az-subscription-name-01",
+    "subscription-02",
+    "subscription-03"
+]  # list of strings of the full display name of desired subscriptions
 tag_name = 'costcenter'
 
 if __name__ == "__main__":
@@ -47,19 +51,41 @@ if __name__ == "__main__":
                 sleep(10)
 
         for rg in rg_list:
-            if rg.tags.get(tag_name):
+            new_tags = rg.tags
+            if new_tags and not new_tags.get(tag_name):
+                # Azure returns a case sensitive tag dictionary for key names that are in other cases insensitive.
+                # This if block will find those tags where the case sensitive tag_name isn't found, but a
+                # case insensitive match is found, and convert them to the case passed in the tag_name global variable.
+                # In theory it SHOULDN'T be possible to have multiple tags in Azure on a resource that are the same after .lower(), but .... Microsoft.
+                for key, value in list(new_tags.items()):  # list wrap to force copy by value at time of lower() call instead of dynamic iterator object.
+                    if key.lower() == tag_name.lower():
+                        new_tags[tag_name] = value
+                        del new_tags[key]
+
+            if new_tags and new_tags.get(tag_name):
                 # TODO for a generic tag value converter, we need to get rid of the regex substitution to only digits
-                # if tag_conversion_dictionary.get(rg.tags.get(tag_name)):
-                if tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name))):  # filter for only digits before lookup in tag dict
-                    new_tags = rg.tags
-                    new_tags["old" + tag_name] = rg.tags.get(tag_name)
-                    new_tags[tag_name] = tag_conversion_dictionary.get(re.sub(r'\D', '', rg.tags.get(tag_name)))
+                if tag_conversion_dictionary.get(re.sub(r'\D', '', new_tags.get(tag_name))):  # filter for only digits before lookup in tag dict
+                    new_tags["old" + tag_name] = new_tags.get(tag_name)
+                    new_tags[tag_name] = tag_conversion_dictionary.get(re.sub(r'\D', '', new_tags.get(tag_name)))
                     print('  Updating resource group {0}, {1} tag value {2} to {3}'.format(rg.name,
                                                                                            tag_name,
                                                                                            new_tags.get("old" + tag_name),
                                                                                            new_tags.get(tag_name)))
-                    resource_client.resource_groups.create_or_update(rg.name, {"location": rg.location, "tags": new_tags})  # location is required for reasons.
-            # SECTION TO UNDO
+
+                    update_results = False
+                    while not update_results:
+                        try:
+                            # location is required for reasons, even if it's not applicable for an "update" operation.
+                            update_results = True  # comment out to preserve retries after API throttling.
+                            update_results = resource_client.resource_groups.update(rg.name, {"location": rg.location, "tags": new_tags})
+                        except CloudError as e:
+                            print('EXCEPTION {}'.format(e))
+                            # sleep(10)  # uncomment if you need to pause during API throtting.
+                else:
+                    print(' Skipping resource group {0}, costcenter {1} '.format(rg.name, new_tags.get(tag_name)))
+
+            # # SECTION TO UNDO
+            # # has not been tested since case insensitive tag refactor was added.
             # if rg.tags.get("old" + tag_name):
             #     new_tags = rg.tags
             #     new_tags[tag_name] = rg.tags.get("old" + tag_name)
