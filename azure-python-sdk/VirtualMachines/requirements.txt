@@ -1,5 +1,11 @@
-azure-common
+azure-cli-core==2.26.1
+azure-common==1.1.11
+azure-identity==1.7.0
 azure-mgmt-compute
-azure-mgmt-resource
+azure-mgmt-resource==10.2.0
 jmespath
-msrestazure
+msrest==0.6.21
+msrestazure==0.6.4
+packaging
+requests[security]
+xmltodict
