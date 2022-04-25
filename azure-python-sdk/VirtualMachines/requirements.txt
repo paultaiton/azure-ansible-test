@@ -1,4 +1,5 @@
 azure-common
-azure-mgmt-resource
 azure-mgmt-compute
+azure-mgmt-resource
 jmespath
+msrestazure
