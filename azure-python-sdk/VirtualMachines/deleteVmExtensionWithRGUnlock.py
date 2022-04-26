@@ -5,6 +5,7 @@ from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource.locks import ManagementLockClient
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import HttpResponseError
 from msrestazure.tools import parse_resource_id
 from time import sleep
 import jmespath
@@ -58,22 +59,30 @@ if __name__ == "__main__":
         rg_name_set = {x.split('/')[4] for x in vm_extension_id_set} - rg_skip_set
 
         for rg_name in rg_name_set:
-            print("")
-            print("Fetch lock on {0}.".format(rg_name))
+            delete_lro_poller_list = []
             lock_list = list(lock_client.management_locks.list_at_resource_group_level(rg_name))
             for lock in lock_list:
                 lock_parse = parse_resource_id(lock.id)
-                lock_client.management_locks.delete_at_resource_group_level(lock_parse.get('resource_group'), lock_parse.get('name'))
-                print("Delete lock {0} on {1}.".format(lock_parse.get('name'), rg_name))
+                print("Delete {0} lock {1} on {2}.".format(lock.level, lock.name, rg_name))
+                lock_client.management_locks.delete_at_resource_group_level(rg_name, lock.name)
             for extension_id in vm_extension_id_set:
-                if rg_name in extension_id:
+                extension_parse = parse_resource_id(extension_id)
+                if rg_name == extension_parse.get('resource_group').lower():
                     print("Delete extension {0}".format(extension_id))
+                    delete_lro_poller_list.append(compute_client.virtual_machine_extensions.begin_delete(extension_parse.get('resource_group'),
+                                                                                                         extension_parse.get('name'),
+                                                                                                         extension_parse.get('child_name_1')))
+            for poller in delete_lro_poller_list:
+                while not poller.done():
+                    try:
+                        sleep(10)
+                    except HttpResponseError:
+                        sleep(10)
+
             for lock in lock_list:
-                lock_client.management_locks.create_or_update_at_resource_group_level(lock_parse.get('resource_group'),
+                lock_client.management_locks.create_or_update_at_resource_group_level(rg_name,
                                                                                       lock.name,
                                                                                       {"level": lock.level})
-                print("Re-lock {0} on {1}".format(lock_parse.get('name'), rg_name))
+                print("Re-lock {0} on {1}".format(lock.name, rg_name))
 
-            print('')
-
-        print('###################################')
+            print("")
