@@ -61,8 +61,6 @@ if __name__ == "__main__":
         rg_name_set = {x.split('/')[4] for x in vm_extension_id_set} - rg_skip_set
 
         for rg_name in rg_name_set:
-            if rg_bad_vm_set:
-                print("\nResource groups with VMs that aren't running:\n{0}\n".format(rg_bad_vm_set))
             delete_lro_poller_list = []
             lock_list = list(lock_client.management_locks.list_at_resource_group_level(rg_name))
             for lock in lock_list:
@@ -80,6 +78,10 @@ if __name__ == "__main__":
                     except ResourceExistsError:
                         print("Cannot delete extensions on vm {0}, the machine is most likely not running.".format(extension_parse.get('name')))
                         rg_bad_vm_set.add(rg_name)
+
+            if rg_bad_vm_set:
+                print("\nResource groups with VMs that aren't running:\n{0}\n".format(rg_bad_vm_set))
+
             for poller in delete_lro_poller_list:
                 poller_finished = False
                 while not poller_finished:
