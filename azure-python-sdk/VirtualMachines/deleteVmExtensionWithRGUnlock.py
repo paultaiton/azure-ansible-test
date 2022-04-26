@@ -6,6 +6,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource.locks import ManagementLockClient
 from msrestazure.azure_exceptions import CloudError
 from azure.core.exceptions import HttpResponseError
+from azure.core.exceptions import ResourceExistsError
 from msrestazure.tools import parse_resource_id
 from time import sleep
 import jmespath
@@ -69,9 +70,12 @@ if __name__ == "__main__":
                 extension_parse = parse_resource_id(extension_id)
                 if rg_name == extension_parse.get('resource_group').lower():
                     print("Delete extension {0}".format(extension_id))
-                    delete_lro_poller_list.append(compute_client.virtual_machine_extensions.begin_delete(extension_parse.get('resource_group'),
-                                                                                                         extension_parse.get('name'),
-                                                                                                         extension_parse.get('child_name_1')))
+                    try:
+                        delete_lro_poller_list.append(compute_client.virtual_machine_extensions.begin_delete(extension_parse.get('resource_group'),
+                                                                                                             extension_parse.get('name'),
+                                                                                                             extension_parse.get('child_name_1')))
+                    except ResourceExistsError:
+                        print("Cannot delete extensions on vm {0}, the machine is most likely not running.".format(extension_parse.get('name')))
             for poller in delete_lro_poller_list:
                 while not poller.done():
                     try:
