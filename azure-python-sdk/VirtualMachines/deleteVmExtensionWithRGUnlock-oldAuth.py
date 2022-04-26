@@ -6,6 +6,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource.locks import ManagementLockClient
 from msrestazure.azure_exceptions import CloudError
 from azure.core.exceptions import HttpResponseError
+from azure.core.exceptions import ResourceExistsError
 from msrestazure.tools import parse_resource_id
 from time import sleep
 import jmespath
