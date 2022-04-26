@@ -69,7 +69,9 @@ if __name__ == "__main__":
                 if rg_name in extension_id:
                     print("Delete extension {0}".format(extension_id))
             for lock in lock_list:
-                lock_client.management_locks.create_or_update_at_resource_group_level(lock_parse.get('resource_group'), lock_parse.get('name'), {})
+                lock_client.management_locks.create_or_update_at_resource_group_level(lock_parse.get('resource_group'),
+                                                                                      lock.name,
+                                                                                      {"level": lock.level})
                 print("Re-lock {0} on {1}".format(lock_parse.get('name'), rg_name))
 
             print('')
