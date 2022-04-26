@@ -81,7 +81,7 @@ if __name__ == "__main__":
                         rg_bad_vm_set.add(rg_name)
 
             if rg_bad_vm_set:
-                print("\nResource groups with VMs that aren't running:\n{0}\n".format(rg_bad_vm_set))
+                print("\nResource groups with VMs that aren't running or fail to manage extensions:\n{0}\n".format(rg_bad_vm_set))
 
             for poller in delete_lro_poller_list:
                 poller_finished = False
