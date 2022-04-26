@@ -62,9 +62,9 @@ if __name__ == "__main__":
             lock_list = list(lock_client.management_locks.list_at_resource_group_level(rg_name))
             for lock in lock_list:
                 pass
-                # lock_parse = parse_resource_id(lock.id)
-                # print("Delete {0} lock {1} on {2}.".format(lock.level, lock.name, rg_name))
-                # lock_client.management_locks.delete_at_resource_group_level(rg_name, lock.name)
+                lock_parse = parse_resource_id(lock.id)
+                print("Delete {0} lock {1} on {2}.".format(lock.level, lock.name, rg_name))
+                lock_client.management_locks.delete_at_resource_group_level(rg_name, lock.name)
             for extension_id in vm_extension_id_set:
                 extension_parse = parse_resource_id(extension_id)
                 if rg_name == extension_parse.get('resource_group').lower():
