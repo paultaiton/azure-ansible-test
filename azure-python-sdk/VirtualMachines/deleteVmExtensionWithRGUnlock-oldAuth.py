@@ -45,6 +45,8 @@ if __name__ == "__main__":
             sleep(10)
 
     for subscription in subscription_list:
+        print("Starting subscription {0}".format(subscription.display_name))
+        rg_bad_vm_set = set()
         compute_client = get_client_from_cli_profile(ComputeManagementClient,
                                                      subscription_id=subscription.subscription_id)
         lock_client = get_client_from_cli_profile(ManagementLockClient,
@@ -59,6 +61,8 @@ if __name__ == "__main__":
         rg_name_set = {x.split('/')[4] for x in vm_extension_id_set} - rg_skip_set
 
         for rg_name in rg_name_set:
+            if rg_bad_vm_set:
+                print("\nResource groups with VMs that aren't running:\n{0}\n".format(rg_bad_vm_set))
             delete_lro_poller_list = []
             lock_list = list(lock_client.management_locks.list_at_resource_group_level(rg_name))
             for lock in lock_list:
@@ -75,11 +79,17 @@ if __name__ == "__main__":
                                                                                                              extension_parse.get('child_name_1')))
                     except ResourceExistsError:
                         print("Cannot delete extensions on vm {0}, the machine is most likely not running.".format(extension_parse.get('name')))
+                        rg_bad_vm_set.add(rg_name)
             for poller in delete_lro_poller_list:
-                while not poller.done():
+                poller_finished = False
+                while not poller_finished:
                     try:
+                        poller_finished = poller.done()
+                        # Normal "not-done" state
                         sleep(10)
                     except HttpResponseError:
+                        # Abnormal response failure from Azure
+                        print('Azure API failure, retrying in 10 seconds')
                         sleep(10)
 
             for lock in lock_list:
