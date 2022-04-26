@@ -53,8 +53,6 @@ if __name__ == "__main__":
         # Get the lowercase id string from all VMs' resources (extensions) that match the list of extension names
         vm_extension_id_set = {x.get('id').lower() for x in jmespath.search('[].resources[]', all_vm_dictionary_list)
                                if x.get('id').split('/')[-1].lower() in vm_extension_names_set}
-            # vm_extension_id_set += {x.get('id').lower() for x in jmespath.search('[].resources[? id.ends_with(@, `' + extension_name + '`)][]',
-            #                                                                      all_vm_dictionary_list)}
 
         rg_name_set = {x.split('/')[4] for x in vm_extension_id_set} - rg_skip_set
 

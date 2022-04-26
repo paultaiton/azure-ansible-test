@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from azure.common.client_factory import get_client_from_cli_profile
+from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource.locks import ManagementLockClient
@@ -23,7 +23,8 @@ vm_extension_names_set = {
 }  # List of VM extensions to delete
 
 if __name__ == "__main__":
-    subscription_client = get_client_from_cli_profile(SubscriptionClient)
+    azure_credential = DefaultAzureCredential()
+    subscription_client = SubscriptionClient(azure_credential)
 
     # Azure names are not case sensitive in Azure, but python comparisons are.
     subscription_names_list = [x.lower() for x in subscription_names_list]
@@ -43,18 +44,16 @@ if __name__ == "__main__":
             sleep(10)
 
     for subscription in subscription_list:
-        compute_client = get_client_from_cli_profile(ComputeManagementClient,
-                                                     subscription_id=subscription.subscription_id)
-        lock_client = get_client_from_cli_profile(ManagementLockClient,
-                                                  subscription_id=subscription.subscription_id)
+        compute_client = ComputeManagementClient(azure_credential,
+                                                 subscription_id=subscription.subscription_id)
+        lock_client = ManagementLockClient(azure_credential,
+                                           subscription_id=subscription.subscription_id)
 
         all_vm_dictionary_list = [x.as_dict() for x in compute_client.virtual_machines.list_all()
                                   if x.as_dict().get('resources')]
         # Get the lowercase id string from all VMs' resources (extensions) that match the list of extension names
         vm_extension_id_set = {x.get('id').lower() for x in jmespath.search('[].resources[]', all_vm_dictionary_list)
                                if x.get('id').split('/')[-1].lower() in vm_extension_names_set}
-            # vm_extension_id_set += {x.get('id').lower() for x in jmespath.search('[].resources[? id.ends_with(@, `' + extension_name + '`)][]',
-            #                                                                      all_vm_dictionary_list)}
 
         rg_name_set = {x.split('/')[4] for x in vm_extension_id_set} - rg_skip_set
 
