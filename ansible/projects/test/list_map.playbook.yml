@@ -1,0 +1,27 @@
+---
+- name: test playbook
+  hosts: localhost
+  vars:
+    list_of_strings:
+      - one.two.three
+      - four.five.six
+      - seven.eight.nine
+  tasks:
+
+    - name: debug test cases
+      ansible.builtin.debug:
+        msg:
+          raw: "{{ list_of_strings }}"
+          map: >-
+            {{
+              list_of_strings | map('split', '.') | json_query('[2]')
+            }}
+          # jmespath_map: >-
+          #   {{
+          #     list_of_strings | json_query('map(split(`.`), @) | [2]')
+          #   }}
+
+    - name: debug test cases
+      ansible.builtin.set_stats:
+        data:
+          list_of_strings: "{{ list_of_strings }}"
