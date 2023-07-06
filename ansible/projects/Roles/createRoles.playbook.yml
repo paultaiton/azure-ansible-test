@@ -1,18 +1,7 @@
 ---
 - name: Role Assignment Info Play
   hosts: localhost
-  vars:
-    #   Optional filters
-    #az_role_assignment_name:
-    #az_subscription_id:
-    #az_role_assignment_scope:
-    #az_role_assignment_assignee:
-    #az_role_definition_id:
-    #az_role_strict_scope_match:
-    #az_role_assignment_id:
-  gather_facts: no # not necessary at this time; localhost provides no useful info.
-  collections:
-    - azure.azcollection
+  gather_facts: false  # not necessary at this time; localhost provides no useful info.
   tasks:
     - name: List Role Assignments at scope
       azure.azcollection.azure_rm_roleassignment:
@@ -24,4 +13,3 @@
         state: present
         subscription_id: "{{ az_subscription_id | default(omit) }}"
       register: az_role_assignment
-
